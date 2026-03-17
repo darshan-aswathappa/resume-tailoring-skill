@@ -231,17 +231,36 @@ overall = (scan_score * 0.6) + (detail_score * 0.4)
 ### Decision Logic
 
 ```python
-def evaluate(scan_score, detail_score, knockouts_found):
+def evaluate(scan_score, detail_score, knockouts_found, specialist_confidence=None):
     overall = (scan_score * 0.6) + (detail_score * 0.4)
 
     if knockouts_found > 0:
         return "REJECT", "knockout"
     if scan_score < 70:
         return "REJECT", "weak_first_impression"
-    if overall < 85:
-        return "REJECT", "insufficient_evidence"
-    return "PASS", None
+    if overall >= 85:
+        return "PASS", None
+
+    # Phase 6.5: Specialist Override
+    # If formula score is below 85 but >= 70, a high-confidence specialist review can override
+    if specialist_confidence is not None and specialist_confidence >= 85 and overall >= 70:
+        return "PASS", "specialist_override"
+
+    return "REJECT", "insufficient_evidence"
 ```
+
+**Phase 6.5: Specialist Override Rules**
+
+After computing the formula score, consult the Recruitment Specialist agent:
+
+| Formula Score | Specialist Confidence | Result |
+|---|---|---|
+| >= 85 | any | PASS (formula) |
+| 70-84 | >= 85% | PASS (specialist override) |
+| 70-84 | < 85% | REJECT (insufficient evidence) |
+| < 70 | any | REJECT (weak first impression — floor constraint, no override) |
+
+**Limitation:** The specialist agent and the formula evaluator share the same underlying LLM. The specialist override provides a second-pass heuristic, not a fully independent evaluation.
 
 Decision outcomes:
 - **PASS**: overall >= 85 AND scan_score >= 70 AND zero knockouts
@@ -446,7 +465,7 @@ DIFFERENTIATOR NOTES:
 VERDICT: This resume would be forwarded to the hiring manager.
 {If score > 92: 'With a personal recommendation note.'}
 
-Proceeding to Phase 5 (Library Update)."
+Proceeding to Phase 5 (User Review + Optional Library Update)."
 ```
 
 ## REJECT Output Template

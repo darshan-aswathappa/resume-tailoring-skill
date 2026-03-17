@@ -29,9 +29,11 @@ Current best match: {X}% confidence ('{best_match_text}')
 ```
 
 **Leverage Classification:**
-- HIGH-LEVERAGE: Appears in 3+ jobs (critical gaps)
-- MEDIUM-LEVERAGE: Appears in 2 jobs (important gaps)
-- LOW-LEVERAGE: Appears in 1 job (job-specific gaps)
+- HIGH-LEVERAGE: Appears in 3+ jobs — prioritize in discovery
+- MEDIUM-LEVERAGE: Appears in 2 jobs — address if time permits
+- LOW-LEVERAGE: Appears in 1 job — address last or skip if time-constrained
+
+> This terminology is used consistently across branching-questions.md and multi-job-workflow.md gap analysis output.
 
 **Example:**
 

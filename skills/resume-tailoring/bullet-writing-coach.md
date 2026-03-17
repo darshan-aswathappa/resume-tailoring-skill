@@ -31,7 +31,7 @@ X-first (acceptable when impact is the headline):
 
 ## Bullet Constraints
 
-1. **HARD MAX: One sentence per bullet, maximum 1-2 printed lines (~120 characters ideal, 150 characters absolute cap).** If a bullet exceeds 150 characters of plain text, it MUST be trimmed — cut qualifiers, merge clauses, or drop the least impactful detail. A 3-line bullet is NEVER acceptable.
+1. **HARD MAX: One sentence per bullet, maximum 1-2 printed lines (~120 characters ideal, 150 characters absolute cap).** If a bullet exceeds 150 characters of plain text, trim first — cut qualifiers, merge clauses, or drop the least impactful detail. If trimming would require sacrificing a quantified metric, split into two focused single-metric bullets (each ≤ 150 characters) instead. A 3-line bullet is NEVER acceptable.
 2. Start every bullet with a strong past-tense action verb
 3. No personal pronouns -- never use I, we, my, our, us, their
 4. No periods at the end of bullets
@@ -168,7 +168,7 @@ REASONING: "{one sentence: what changed and why}"
 2. **IDENTIFY METRICS**: Pull out every number, percentage, dollar figure, timeline, and scale indicator from the source resume
 3. **DRAFT**: Generate 2-3 bullet options per experience when workshopping interactively; 1 recommended bullet when batch processing
 4. **RANK**: Order candidate bullets by impressiveness; recommend the strongest with one sentence of reasoning
-5. **TRIM**: Cut adjectives and adverbs first, then compress clauses. Never sacrifice a metric for space. If a bullet is too long, split into two bullets rather than losing quantified impact
+5. **TRIM**: Cut adjectives and adverbs first, then compress clauses. If trimming can reduce the bullet to ≤ 150 characters without losing a quantified metric, trim it. If the only way to fit within 150 characters is to drop a metric, split into two focused single-metric bullets instead. Never remove a quantified metric as the first resort.
 
 ## Mode-Dependent Rules
 

@@ -64,19 +64,19 @@ Use this skill when:
 
 **Workflow:**
 
-1. Recruiter intake - build evaluation rubric from JD (sealed)
-2. Build library from existing resumes (supports `.md` and `.tex`)
-3. Research company/role
-4. Create template (with user checkpoint)
-5. Optional: Branching experience discovery
-6. Match content with confidence scoring
-7. Polish bullets using XYZ format (bullet-writing coach)
-8. Generate output:
+1. [Phase -1] Recruiter intake - build evaluation rubric from JD (sealed)
+2. [Phase 0] Build library from existing resumes (supports `.md` and `.tex`)
+3. [Phase 1] Research company/role
+4. [Phase 2] Create template (with user checkpoint)
+5. [Phase 2.5] Gap Resolution: branching interview (truth mode) or silent fabrication (yolo mode, AUTO)
+6. [Phase 3] Match content with confidence scoring
+7. [Phase 3.5] Polish bullets using XYZ format (bullet-writing coach)
+8. [Phase 4] Generate output:
    - If source is `.md`: Generate full MD + DOCX + Report (+ optional PDF)
    - If source is `.tex`: Generate LaTeX changes patch only (courses, experience bullets, project bullets, skills)
-9. Recruiter evaluation (6-second scan + 14-second detail review)
-10. If rejected: iterate with feedback (max 3 loops)
-11. User review and optional library update
+9. [Phase 6] Recruiter evaluation (6-second scan + 14-second detail review)
+10. [Phase 6] If rejected: iterate with feedback (max 3 loops)
+11. [Phase 5] User review and optional library update
 
 ## Implementation
 
@@ -87,6 +87,7 @@ See supporting files:
 - `branching-questions.md` - Experience discovery conversation patterns
 - `bullet-writing-coach.md` - XYZ format rules, verb enforcement, role-type adaptation
 - `recruiter-evaluation.md` - Recruiter rubric generation, scoring, feedback loop routing
+- `recruitment-specialist.md` - US hiring market screening expert agent; invoked in Phase -1 rubric generation and Phase 6.5 specialist review
 
 ## Workflow Details
 
@@ -230,15 +231,27 @@ Before building the evaluation rubric, consult the Recruitment Specialist agent 
 - What forward triggers resonate for hiring managers in this space
 
 ```
-RECRUITMENT SPECIALIST CONSULTATION:
-[Invoke Recruitment Specialist agent with role: "{Role}" at company: "{Company}"]
+RECRUITMENT SPECIALIST INVOCATION:
 
-Ask the specialist:
+Input (pass to agent):
+  role: "{Role}"
+  company: "{Company}"
+  jd_excerpt: "{First 200 words of JD highlighting key requirements}"
+
+Queries to the specialist:
 1. "What are the most critical knockout criteria for a {Role} at {Company}?"
 2. "What signals make a recruiter forward a {Role} resume to the hiring manager?"
 3. "What differentiates an excellent candidate from a good one for this role type?"
 
-Incorporate the specialist's answers into the rubric construction below.
+Expected output schema from specialist:
+{
+  "knockout_criteria": ["<criterion_1>", "<criterion_2>", ...],   // 3-5 items
+  "forward_triggers": ["<trigger_1>", "<trigger_2>", ...],        // 3-5 items
+  "differentiators": ["<differentiator_1>", ...],                 // 2-3 items
+  "domain_notes": "<role-type and domain-specific context>"
+}
+
+Incorporate the specialist's output into the rubric construction below.
 ```
 
 **-1.1 Activate Recruiter Persona:**
@@ -1769,7 +1782,7 @@ VERDICT: This resume would be forwarded to the hiring manager.
 
 Proceed to library update."
 
-→ Continue to Phase 5
+→ Continue to Phase 5 (User Review + Optional Library Update)
 ```
 
 **If REJECT:**
@@ -1853,6 +1866,7 @@ def determine_restart_phase(feedback_items):
 - Phase 2 re-runs ONLY on structural feedback (rare)
 - Each iteration should be progressively lighter (fewer bullets to fix)
 - Recruiter feedback carries forward as additional input to the routed phase
+- Threshold adjustment: If the user selects KEEP over the recruiter's framing recommendation during evaluation, the pass threshold for the conflicting scan priority is reduced by 5 points for that iteration (see recruiter-evaluation.md edge cases)
 
 **LaTeX mode iteration behavior:**
 
@@ -1890,7 +1904,7 @@ The root cause is likely a content gap, not a presentation issue.
 Which option?"
 
 → If option 1: Continue to Phase 5
-→ If option 2: Return to Phase 2.5 (Experience Discovery)
+→ If option 2: Run Supplemental Discovery — target remaining gaps only (note: this is a special exception; Phase 2.5 normally does not re-run during iteration loops)
 → If option 3: Collect user feedback, apply changes, re-evaluate
 ```
 
@@ -2101,10 +2115,10 @@ SKILL:
 3. Research: Microsoft 1ES team, internal culture, role benchmarking
 4. Template: Features PM2 Azure Eng Systems role (most relevant)
 5. Discovery: Surfaces VS Code extension, Bhavana AI side project
-6. Assembly: 92% JD coverage, 75% direct matches
+6. Assembly: 83% JD coverage, 75% direct matches
 7. Bullet Polish: 2 bullets improved (verb upgrades, added metrics)
 8. Generate: MD + DOCX + Report
-9. Recruiter Evaluation: PASS on first attempt (Score: 82/100)
+9. Recruiter Evaluation: PASS on first attempt (Score: 82/100, via Specialist Override — specialist confidence: 86%)
 10. User approves → Library updated with new resume + 6 discovered experiences
 
 RESULT: Highly competitive application leveraging internal experience
@@ -2127,7 +2141,7 @@ SKILL:
 7. Bullet Polish: 5 bullets rewritten (domain terminology alignment)
 8. Generate: Resume + gap analysis with cover letter recommendations
 9. Recruiter Evaluation: REJECT (Score: 58/100) → feedback: weak domain signal
-   Iteration 2: Bullet polish strengthens ecology keywords → PASS (Score: 71/100)
+   Iteration 2: Bullet polish strengthens ecology keywords → PASS (Score: 71/100, Specialist Override: specialist confidence 88%)
 
 RESULT: Bridges technical skills with environmental domain
 ```
@@ -2147,7 +2161,7 @@ SKILL:
 6. Assembly: Frames gap as entrepreneurial experience
 7. Bullet Polish: 3 startup bullets enhanced with metrics and XYZ format
 8. Generate: Resume presenting gap as valuable experience
-9. Recruiter Evaluation: PASS (Score: 73/100) - startup framing cleared knockout
+9. Recruiter Evaluation: PASS (Score: 73/100, Specialist Override: specialist confidence 87%) - startup framing cleared knockout
 
 RESULT: Gap becomes strength showing initiative and diverse skills
 ```
@@ -2204,8 +2218,8 @@ SKILL:
    - React work from bootcamp
    - Large-scale system design course
 5. Per-Job Processing (×2): Jobs 4, 5 processed with bullet polish + recruiter eval
-   - Job 4 (Stripe): recruiter score 76/100 (PASS)
-   - Job 5 (Meta): recruiter score 68/100 → iteration 2: 74/100 (PASS)
+   - Job 4 (Stripe): recruiter score 76/100 (PASS, Specialist Override: 87% confidence)
+   - Job 5 (Meta): recruiter score 68/100 → iteration 2: 74/100 (PASS, Specialist Override: 86% confidence)
 6. Updated Batch Summary: Now 5 jobs total, 8 experiences discovered
 
 RESULT: 2 additional resumes in 20 minutes (vs 30 min if starting from scratch)
@@ -2229,7 +2243,7 @@ SKILL:
    - Detail: 52/100 (weak achievement depth)
    - Feedback: Move cloud keywords to summary, add metrics to top bullets
 6. Bullet Polish (Iteration 2): 3 bullets improved per feedback
-7. Recruiter Evaluation (Iteration 2): PASS (Score: 74/100)
+7. Recruiter Evaluation (Iteration 2): PASS (Score: 74/100, Specialist Override: specialist confidence 88%)
    - Scan: 78/100 (keywords now prominent)
    - Detail: 68/100 (metrics now visible)
 

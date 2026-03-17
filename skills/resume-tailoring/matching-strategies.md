@@ -14,9 +14,9 @@ Match experiences from library to template slots with transparent confidence sco
 
 **Scoring:**
 - 90-100%: Exact match (same skill, domain, context)
-- 70-89%: Strong match (same skill, different domain)
-- 50-69%: Good match (overlapping keywords, similar outcomes)
-- <50%: Weak direct match
+- 75-89%: Strong match (same skill, different domain)
+- 60-74%: Moderate match (overlapping keywords, similar outcomes)
+- <60%: Weak direct match
 
 **2. Transferable Skills (30%)**
 - Same capability in different context
@@ -26,9 +26,9 @@ Match experiences from library to template slots with transparent confidence sco
 
 **Scoring:**
 - 90-100%: Directly transferable (process, skill generic)
-- 70-89%: Mostly transferable (some domain translation needed)
-- 50-69%: Partially transferable (analogy required)
-- <50%: Stretch to call transferable
+- 75-89%: Mostly transferable (some domain translation needed)
+- 60-74%: Partially transferable (analogy required)
+- <60%: Stretch to call transferable
 
 **3. Adjacent Experience (20%)**
 - Touched on skill as secondary responsibility
@@ -38,9 +38,9 @@ Match experiences from library to template slots with transparent confidence sco
 
 **Scoring:**
 - 90-100%: Closely adjacent (just different framing)
-- 70-89%: Clearly adjacent (related but distinct)
-- 50-69%: Somewhat adjacent (requires explanation)
-- <50%: Loosely adjacent
+- 75-89%: Clearly adjacent (related but distinct)
+- 60-74%: Somewhat adjacent (requires explanation)
+- <60%: Loosely adjacent
 
 **4. Impact Alignment (10%)**
 - Achievement type matches what role values
@@ -51,9 +51,11 @@ Match experiences from library to template slots with transparent confidence sco
 
 **Scoring:**
 - 90-100%: Perfect impact alignment
-- 70-89%: Strong impact alignment
-- 50-69%: Moderate impact alignment
-- <50%: Weak impact alignment
+- 75-89%: Strong impact alignment
+- 60-74%: Moderate impact alignment
+- <60%: Weak impact alignment
+
+> **Note:** Sub-dimension scoring bands use the same 75/60 breakpoints as the overall confidence bands. A sub-dimension score below 60% will contribute toward a GAP-level overall score.
 
 ## Overall Confidence Score
 

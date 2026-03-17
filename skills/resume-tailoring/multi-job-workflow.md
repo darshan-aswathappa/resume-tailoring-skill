@@ -607,9 +607,9 @@ FINAL COVERAGE:
 - Job 3 (AWS): 65% → 78% (+13%)
 
 Remaining gaps: 5 (down from 14)
-├─ 0 critical gaps ✓
-├─ 2 important gaps
-└─ 3 job-specific gaps
+├─ 0 HIGH-LEVERAGE gaps ✓ (appear in 3+ jobs)
+├─ 2 MEDIUM-LEVERAGE gaps (appear in 2 jobs)
+└─ 3 LOW-LEVERAGE gaps (appear in 1 job)
 
 Ready to proceed with per-job processing? (Y/N)"
 ```
@@ -779,7 +779,7 @@ Approve? (Y/N/adjust)"
 - Save to file
 - Proceed automatically
 
-**3.45 Phase 3C.5: Bullet Polish (Per-Job)**
+**Phase 3C.5: Bullet Polish (Per-Job)**
 
 **Same process as single-job workflow (SKILL.md Phase 3.5):**
 
@@ -1210,14 +1210,14 @@ Batch state preserved for future reference."
 
 **Scenario:** User processes 3 jobs today, finds 2 more jobs next week
 
-**8.1 Detect Add Request:**
+**5.1 Detect Add Request:**
 
 User says:
 - "Add another job to my batch"
 - "I found 2 more jobs"
 - "Resume batch {batch_id} and add jobs"
 
-**8.2 Load Existing Batch:**
+**5.2 Load Existing Batch:**
 
 ```python
 # Pseudo-code
@@ -1228,7 +1228,7 @@ if batch.current_phase == "completed":
     batch.current_phase = "intake"  # Reopen for new jobs
 ```
 
-**8.3 Intake New Jobs:**
+**5.3 Intake New Jobs:**
 
 Same process as Phase 0, but:
 - Append to existing batch.jobs list
@@ -1250,7 +1250,7 @@ Provide job description for Job 4: [user input]
 Add another job? (Y/N)
 ```
 
-**8.4 Incremental Gap Analysis:**
+**5.4 Incremental Gap Analysis:**
 
 ```
 "Running incremental gap analysis for new jobs...
@@ -1266,9 +1266,9 @@ COVERAGE WITH EXISTING LIBRARY:
 - Job 5 (Meta): 75% coverage
 
 NEW GAPS (not covered by previous discoveries):
-- Payment systems experience (Job 4 only) 🔵
-- Large-scale social networking (Job 5 only) 🔵
-- React/frontend (Jobs 4, 5) 🟡
+- Payment systems experience (Job 4 only) [LOW-LEVERAGE]
+- Large-scale social networking (Job 5 only) [LOW-LEVERAGE]
+- React/frontend (Jobs 4, 5) [MEDIUM-LEVERAGE]
 
 ALREADY COVERED FROM PREVIOUS BATCH:
 ✓ Kubernetes (from previous batch)
@@ -1281,7 +1281,7 @@ Estimated discovery time: 5-10 minutes (vs 30-40 for original batch)
 Ready for incremental discovery? (Y/N)"
 ```
 
-**8.5 Incremental Discovery:**
+**5.5 Incremental Discovery:**
 
 Only ask about NEW gaps:
 
@@ -1301,13 +1301,13 @@ conduct_discovery(new_gaps)
 
 **Important:** Don't re-ask questions already answered in previous session.
 
-**8.6 Process New Jobs:**
+**5.6 Process New Jobs:**
 
 Run Phase 3 (per-job processing) for new jobs only:
 - Job 4: Research → Template → Matching → Generation
 - Job 5: Research → Template → Matching → Generation
 
-**8.7 Update Batch Summary:**
+**5.7 Update Batch Summary:**
 
 Add new jobs to `_batch_summary.md`:
 
@@ -1328,7 +1328,7 @@ Added 2 new jobs to batch after initial completion.
 - Total experiences discovered: 8
 ```
 
-**8.8 Final Output:**
+**5.8 Final Output:**
 
 ```
 "Incremental batch processing complete!

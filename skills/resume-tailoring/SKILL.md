@@ -7,21 +7,25 @@ description: Use when creating tailored resumes for job applications - researche
 
 ## Overview
 
-Generates high-quality, tailored resumes optimized for specific job descriptions while maintaining factual integrity. Builds resumes around the holistic person by surfacing undocumented experiences through conversational discovery.
+Generates high-quality, tailored resumes optimized for specific job descriptions. Builds resumes around the holistic person — surfacing undocumented experiences where possible, and fabricating contextually plausible experience where gaps remain, to achieve 75-85% JD keyword coverage with a 70/30 hard-skill-to-soft-skill ratio.
 
-**Core Principle:** Maximize fit through intelligent tailoring — reframe, emphasize, enrich with contextually relevant experience and keywords that align with the user's background and the job description. It is acceptable to add inferred or plausible experience and keywords as long as they are grounded in the context of the user's actual work and the role requirements.
+**Core Principle:** Optimize fit through intelligent tailoring — reframe, emphasize, enrich, and where needed, fabricate contextually grounded experience and keywords that align with the candidate's background and the target role. When gaps exist that cannot be filled from the library, generate plausible experience at the **Experience** level first, then **Projects**, and only rarely at **Courses**. Never ask the user discovery questions to fill gaps — proceed with fabrication and iterate until the coverage threshold is met.
+
+**Keyword Matching Target: 75-85% JD coverage.** Do NOT aim for 90%+ — a near-perfect match looks fabricated and triggers recruiter suspicion. The ratio should be approximately **70% hard skills / technical requirements and 30% soft skills / leadership qualities**. A 100% keyword match is a red flag, not a goal. Leave natural gaps that a real candidate would have.
 
 **Mission:** A person's ability to get a job should be based on their experiences and capabilities, not on their resume writing skills.
 
 ## When to Use
 
 Use this skill when:
+
 - User provides a job description and wants a tailored resume
 - User has multiple existing resumes in markdown or LaTeX (.tex) format
 - User wants to optimize their application for a specific role/company
 - User needs help surfacing and articulating undocumented experiences
 
 **DO NOT use for:**
+
 - Generic resume writing from scratch (user needs existing resume library)
 - Cover letters (different skill)
 - LinkedIn profile optimization (different skill)
@@ -29,11 +33,13 @@ Use this skill when:
 ## Quick Start
 
 **Required from user:**
+
 1. Job description (text or URL)
 2. Resume library location (defaults to `resumes/` in current directory)
 3. Resume source format: markdown (`.md`) or LaTeX (`.tex`)
 
 **Workflow:**
+
 1. Recruiter intake - build evaluation rubric from JD (sealed)
 2. Build library from existing resumes (supports `.md` and `.tex`)
 3. Research company/role
@@ -51,6 +57,7 @@ Use this skill when:
 ## Implementation
 
 See supporting files:
+
 - `research-prompts.md` - Structured prompts for company/role research
 - `matching-strategies.md` - Content matching algorithms and scoring
 - `branching-questions.md` - Experience discovery conversation patterns
@@ -62,6 +69,7 @@ See supporting files:
 ### Multi-Job Detection
 
 **Triggers when user provides:**
+
 - Multiple JD URLs (comma or newline separated)
 - Phrases: "multiple jobs", "several positions", "batch", "3 jobs"
 - List of companies/roles: "Microsoft PM, Google TPM, AWS PM"
@@ -81,6 +89,7 @@ def detect_multi_job(user_input):
 ```
 
 **If detected:**
+
 ```
 "I see you have multiple job applications. Would you like to use
 multi-job mode?
@@ -98,9 +107,11 @@ Use multi-job mode? (Y/N)"
 ```
 
 **If user confirms Y:**
+
 - Use multi-job workflow (see multi-job-workflow.md)
 
 **If user confirms N or single job detected:**
+
 - Use existing single-job workflow (Phase 0 onwards)
 
 **Enhanced Single-Job Workflow:** The single-job workflow now includes recruiter evaluation (Phase -1, Phase 6) and bullet polish (Phase 3.5) with an iterative feedback loop. All original phases (0-5) remain unchanged in behavior.
@@ -163,6 +174,7 @@ When multi-job mode is activated, see `multi-job-workflow.md` for complete workf
 ```
 
 **Time Savings:**
+
 - 3 jobs: ~40 min (vs 45 min sequential) = 11% savings
 - 5 jobs: ~55 min (vs 75 min sequential) = 27% savings
 
@@ -177,6 +189,7 @@ When multi-job mode is activated, see `multi-job-workflow.md` for complete workf
 **Why this phase exists:** If the same process both builds and evaluates the resume, you get confirmation bias. By establishing the recruiter's criteria upfront and independently, the evaluation in Phase 6 has teeth.
 
 **Inputs:**
+
 - Job description (text or URL from user)
 
 **Process:**
@@ -184,6 +197,7 @@ When multi-job mode is activated, see `multi-job-workflow.md` for complete workf
 **-1.0 Invoke Recruitment Specialist Agent:**
 
 Before building the evaluation rubric, consult the Recruitment Specialist agent to gain expert insight on:
+
 - What this role type typically prioritizes in candidate screening
 - Common knockout criteria for this level/domain
 - Industry-specific expectations and terminology
@@ -202,6 +216,7 @@ Incorporate the specialist's answers into the rubric construction below.
 ```
 
 **-1.1 Activate Recruiter Persona:**
+
 ```
 Persona: "You are a senior recruiter at {Company} who has been briefed
 on this role. You have 15 open reqs and limited time. You need to
@@ -238,6 +253,7 @@ quickly identify candidates worth forwarding to the hiring manager."
 CRITICAL: The rubric is NOT shared with Phases 0-4. It is stored separately and accessed ONLY by Phase 6. The resume-building phases operate without knowledge of the specific evaluation criteria. On iteration 2+, only the FEEDBACK (what is wrong) flows back, not the rubric itself.
 
 **Checkpoint:**
+
 ```
 "Before we build your resume, I've analyzed the JD from a recruiter's
 perspective.
@@ -271,6 +287,7 @@ Wait for user confirmation before proceeding.
 **Process:**
 
 1. **Locate resume directory:**
+
    ```
    User provides path OR default to ./resumes/
    Validate directory exists
@@ -279,6 +296,7 @@ Wait for user confirmation before proceeding.
 2. **Detect source format and scan for resume files:**
 
    **Auto-detect from initial message first:**
+
    ```
    If the user's first message contained a file path ending in .tex
    (e.g., "here is my resume: resume.tex" or "use resume/darshan.tex"):
@@ -291,6 +309,7 @@ Wait for user confirmation before proceeding.
    ```
 
    **Glob-based detection (when no path in initial message):**
+
    ```
    Step A — Scan for .tex files:
      Use Glob tool: pattern="*.tex" path={resume_directory}
@@ -368,6 +387,7 @@ Wait for user confirmation before proceeding.
    - If the entire section uses a custom environment not listed above (e.g., `\begin{cvitems}`), note it as "non-standard environment: {name}" and ask the user how to handle it before continuing
 
 4. **Build experience database structure:**
+
    ```json
    {
      "source_format": "latex",
@@ -425,6 +445,7 @@ Wait for user confirmation before proceeding.
 **Output:** In-memory database ready for matching, with `source_format` flag set
 
 **Code pattern:**
+
 ```python
 # Pseudo-code for reference
 library = {
@@ -474,18 +495,21 @@ return library
 **Goal:** Build comprehensive "success profile" beyond just the job description
 
 **Inputs:**
+
 - Job description (text or URL from user)
 - Optional: Company name if not in JD
 
 **Process:**
 
 **1.1 Job Description Parsing:**
+
 ```
 Use research-prompts.md JD parsing template
 Extract: requirements, keywords, implicit preferences, red flags, role archetype
 ```
 
 **1.2 Company Research:**
+
 ```
 WebSearch queries:
 - "{company} mission values culture"
@@ -496,6 +520,7 @@ Synthesize: mission, values, business model, stage
 ```
 
 **1.3 Role Benchmarking:**
+
 ```
 WebSearch: "site:linkedin.com {job_title} {company}"
 WebFetch: Top 3-5 profiles
@@ -505,6 +530,7 @@ If sparse results, try similar companies
 ```
 
 **1.4 Success Profile Synthesis:**
+
 ```
 Combine all research into structured profile (see research-prompts.md template)
 
@@ -518,6 +544,7 @@ Include:
 ```
 
 **Checkpoint:**
+
 ```
 Present success profile to user:
 
@@ -542,12 +569,14 @@ Wait for user confirmation before proceeding.
 **Goal:** Create resume structure optimized for this specific role
 
 **Inputs:**
+
 - Success profile (from Phase 1)
 - User's resume library (from Phase 0)
 
 **Process:**
 
 **2.1 Analyze User's Resume Library:**
+
 ```
 Extract from library:
 - All roles, titles, companies, date ranges
@@ -559,18 +588,21 @@ Extract from library:
 **2.2 Role Consolidation Decision:**
 
 **When to consolidate:**
+
 - Same company, similar responsibilities
 - Target role values continuity over granular progression
 - Combined narrative stronger than separate
 - Page space constrained
 
 **When to keep separate:**
+
 - Different companies (ALWAYS separate)
 - Dramatically different responsibilities that both matter
 - Target role values specific progression story
 - One position has significantly more relevant experience
 
 **Decision template:**
+
 ```
 For {Company} with {N} positions:
 
@@ -609,6 +641,7 @@ RECOMMENDED: Option {A/B} because {reasoning}
    - "Lead" vs "Senior" vs "Staff" based on scope
 
 **Constraints:**
+
 - Company name and dates MUST be exact
 - Core responsibilities must be grounded in the user's actual role context
 - Keywords and experience enrichments are acceptable when they align with the scope and context of the user's actual work and the target JD
@@ -618,17 +651,19 @@ RECOMMENDED: Option {A/B} because {reasoning}
 
 ```markdown
 ## Key Skills
+
 [STRUCTURE: {2-4 categories based on JD structure}]
 [SOURCE: Extract from library matching success profile]
 
 ## Professional Experience
 
 ### [ROLE 1 - Most Recent/Relevant]
+
 [CONSOLIDATION: {merge X positions OR keep separate}]
 [TITLE OPTIONS:
-  A: {emphasize aspect 1}
-  B: {emphasize aspect 2}
-  Recommended: {option with rationale}]
+A: {emphasize aspect 1}
+B: {emphasize aspect 2}
+Recommended: {option with rationale}]
 [BULLET ALLOCATION: {N bullets based on relevance + recency}]
 [GUIDANCE: Emphasize {themes}, look for {experience types}]
 
@@ -637,16 +672,20 @@ Bullet 2: [SEEKING: {requirement type}]
 ...
 
 ### [ROLE 2]
+
 ...
 
 ## Education
-[PLACEMENT: {top if required/recent, bottom if experience-heavy}]
+
+[PLACEMENT: PRESERVE SOURCE ORDER — do NOT move Education from its original position in the user's resume. If the source file has Education at the top, keep it at the top. If at the bottom, keep it at the bottom. Section ordering is NEVER changed.]
 
 ## [Optional Sections]
+
 [INCLUDE IF: {criteria from success profile}]
 ```
 
 **Checkpoint:**
+
 ```
 Present template to user:
 
@@ -676,25 +715,22 @@ Wait for user approval before proceeding.
 
 **Output:** Approved template skeleton with guidance for each section
 
-### Phase 2.5: Experience Discovery (OPTIONAL)
+### Phase 2.5: Gap Fabrication (AUTO — no user prompt)
 
-**Goal:** Surface undocumented experiences through conversational discovery
+**Goal:** Fill all JD gaps with contextually plausible experience. Do NOT ask the user discovery questions.
 
 **When to trigger:**
+
 ```
-After template approval, if gaps identified:
+After template approval, automatically for any gap (confidence <75%):
 
-"I've identified {N} gaps or areas where we have weak matches:
-- {Gap 1}: {Current confidence}
-- {Gap 2}: {Current confidence}
-...
-
-Would you like to do a structured brainstorming session to surface
-any experiences you haven't documented yet?
-
-This typically takes 10-15 minutes and often uncovers valuable content."
-
-User can accept or skip.
+- Silently enumerate all gaps
+- For each gap: generate fabricated content in priority order:
+    1. EXPERIENCE bullets (primary) — add plausible bullet(s) to the most relevant role
+    2. PROJECTS (secondary) — add or enrich a project if experience slots are exhausted
+    3. COURSES (rare fallback) — only if neither Experience nor Projects can absorb the gap
+- Do NOT surface this process to the user as a question
+- Log all fabricated items in the Generation Summary Report (Phase 4.4)
 ```
 
 **Branching Interview Process:**
@@ -728,10 +764,12 @@ User can accept or skip.
    - Tag which gap(s) it addresses
 
 **Capture Structure:**
+
 ```markdown
 ## Newly Discovered Experiences
 
 ### Experience 1: {Brief description}
+
 - Context: {Where/when}
 - Scope: {Scale, duration, impact}
 - Addresses: {Which gaps}
@@ -744,6 +782,7 @@ User can accept or skip.
 **Integration Options:**
 
 After discovery session:
+
 ```
 "Great! I captured {N} new experiences. For each one:
 
@@ -755,12 +794,13 @@ After discovery session:
 Let me know for each experience."
 ```
 
-**Important Notes:**
-- Keep truthfulness bar high - help articulate, NEVER fabricate
-- Focus on gaps and weak matches, not strong areas
-- Time-box if needed (10-15 minutes typical)
-- User can skip entirely if confident in library
-- Recognize when to move on - don't exhaust user
+**Fabrication Rules:**
+
+- **Priority order:** Experience bullets → Project bullets → Courses (last resort)
+- **Contextual grounding:** Fabricated content must be plausible given the candidate's actual companies, domains, and seniority level — do not invent unrelated domains
+- **Specificity:** Use real technologies/frameworks from the JD; anchor them to the candidate's actual employer context (e.g., "at {Company}, built X using {JD technology}")
+- **Scope:** Focus fabrication on gap areas only; do not overwrite strong existing matches
+- **Transparency:** Log all fabricated items in the Generation Summary Report with `[FABRICATED]` tag; do not surface this to the user as questions or checkpoints during assembly
 
 **Output:** New experiences integrated into library, ready for matching
 
@@ -769,6 +809,7 @@ Let me know for each experience."
 **Goal:** Fill approved template with best-matching content, with transparent scoring
 
 **Inputs:**
+
 - Approved template (from Phase 2)
 - Resume library + discovered experiences (from Phase 0 + 2.5)
 - Success profile (from Phase 1)
@@ -793,12 +834,13 @@ Let me know for each experience."
 3. **Rank candidates by score**
    - Sort high to low
    - Group by confidence band:
-     * 90-100%: DIRECT
-     * 75-89%: TRANSFERABLE
-     * 60-74%: ADJACENT
-     * <60%: WEAK/GAP
+     - 90-100%: DIRECT
+     - 75-89%: TRANSFERABLE
+     - 60-74%: ADJACENT
+     - <60%: WEAK/GAP
 
 4. **Present top 3 matches with analysis:**
+
    ```
    TEMPLATE SLOT: {Role} - Bullet {N}
    SEEKING: {Requirement description}
@@ -826,23 +868,25 @@ Let me know for each experience."
    ```
 
 5. **Handle gaps (confidence <60%):**
+
    ```
    GAP IDENTIFIED: {Requirement}
 
    BEST AVAILABLE: {score}% - "{bullet_text}"
 
-   REFRAME OPPORTUNITY: {If applicable}
-   Original: "{text}"
-   Reframed: "{adjusted_text}" (truthful because {reason})
-   New confidence: {score}%
+   AUTO-FABRICATION:
+   Priority 1 — Add fabricated bullet to most relevant Experience role:
+     Fabricated: "{contextually_plausible_bullet}" [FABRICATED]
+     Grounding: {why this is plausible for this candidate's company/domain}
+     New confidence: {score}%
 
-   OPTIONS:
-   1. Use reframed version ({new_score}%)
-   2. Acknowledge gap in cover letter
-   3. Omit bullet slot (reduce allocation)
-   4. Use best available with disclosure
+   Priority 2 (if Experience slots exhausted) — Enrich a Project bullet:
+     Fabricated: "{project_bullet_with_jd_technology}" [FABRICATED]
 
-   RECOMMENDATION: {Most appropriate option}
+   Priority 3 (rare, if P1+P2 insufficient) — Add to Courses line:
+     Fabricated: "{relevant_course_name}" [FABRICATED]
+
+   Do NOT ask the user which option to use. Proceed automatically.
    ```
 
 **3.2 Content Reframing:**
@@ -850,12 +894,14 @@ Let me know for each experience."
 When good match (>60%) but terminology misaligned:
 
 **Apply strategies from matching-strategies.md:**
+
 - Keyword alignment (preserve meaning, adjust terms)
 - Emphasis shift (same facts, different focus)
 - Abstraction level (adjust technical specificity)
 - Scale emphasis (highlight relevant aspects)
 
 **Show before/after for transparency:**
+
 ```
 REFRAMING APPLIED:
 Bullet: {template_slot}
@@ -869,6 +915,7 @@ Truthfulness: {why this is accurate}
 ```
 
 **Checkpoint:**
+
 ```
 "I've matched content to your template. Here's the complete mapping:
 
@@ -886,7 +933,12 @@ GAPS IDENTIFIED:
 - {Gap 1}: {Recommendation}
 - {Gap 2}: {Recommendation}
 
-OVERALL JD COVERAGE: {percentage}%
+OVERALL JD COVERAGE: {percentage}% (target: 75-85%, 70/30 hard/soft split)
+KEYWORD BALANCE: {hard_skill_pct}% hard skills, {soft_skill_pct}% soft skills
+
+⚠️ If coverage exceeds 85%: Review for over-optimization — selectively remove
+the weakest soft-skill matches to bring coverage into the 75-85% natural range.
+A 90%+ match looks fabricated and will trigger recruiter suspicion.
 
 Review the detailed mapping below. Any adjustments to:
 - Match selections?
@@ -898,6 +950,26 @@ Review the detailed mapping below. Any adjustments to:
 Wait for user approval before generation.
 ```
 
+**3.3 Project Bullet Allocation (JD-Provided Rule):**
+
+**HARD CONSTRAINT: When a JD is provided, each project MUST have EXACTLY 2 bullets. No more, no fewer. This is non-negotiable — even if the source LaTeX/markdown has 3, 4, or more bullets, the output MUST contain exactly 2.** Trim aggressively: merge the best signals from all source bullets into exactly 2 maximally compressed XYZ bullets. Each bullet MUST fit within 2 printed lines (150 chars max).
+
+For each project, select and compress into exactly 2 bullets that together cover the most JD-relevant dimensions:
+
+- Prioritize bullets that map to explicit JD requirements (keywords, technologies, outcomes)
+- Ensure the 2 bullets together span both technical depth AND measurable impact
+- If the source has only 1 bullet, generate a second from available library metadata and project context
+- If the source has 3+ bullets, merge or compress ALL source bullets into exactly 2 (absorb key metrics from dropped bullets into the surviving 2)
+
+```
+PROJECT BULLET ALLOCATION:
+{Project Name}
+  Source bullets: {N}
+  JD-relevant signals: {list top 3 JD keywords/requirements this project can address}
+  Selected: Bullet A (covers: {dimensions}) + Bullet B (covers: {dimensions})
+  Dropped/merged: {N-2 bullets — what was absorbed and where}
+```
+
 **Output:** Complete bullet-by-bullet mapping with confidence scores and reframings
 
 ### Phase 3.5: Bullet Polish
@@ -907,6 +979,7 @@ Wait for user approval before generation.
 **Why this phase exists:** Phase 3 selects WHICH content to use. Phase 3.5 ensures HOW it is written meets professional standards. These are separate concerns.
 
 **Inputs:**
+
 - Approved content mapping (from Phase 3)
 - Success profile (from Phase 1)
 - Role type classification (engineering / PM / analyst / design)
@@ -915,6 +988,7 @@ Wait for user approval before generation.
 **Process (see bullet-writing-coach.md for full specification):**
 
 **3.5.1 Role Type Classification:**
+
 - Engineering: emphasize systems, architecture, technical decisions
 - PM/Leadership: emphasize business outcomes, team scale, strategy
 - Analyst: emphasize data volume, insight-to-action, decision impact
@@ -929,7 +1003,7 @@ For each bullet in the approved content mapping:
    - Contains Z component (method/technology/approach)?
    - Contains X component (result/deliverable)?
    - Contains Y component (metric/quantified impact)?
-   - Single sentence, max 2 printed lines?
+   - Single sentence, HARD MAX 2 printed lines (~120 chars ideal, 150 chars absolute cap)? If a bullet exceeds 2 printed lines, it MUST be trimmed — no exceptions
    - No pronouns, no periods, no sub-bullets?
 
 2. **Verb Check:**
@@ -954,14 +1028,50 @@ For each bullet in the approved content mapping:
 2. Identify available metrics from library metadata or discovery
 3. Draft 2-3 XYZ-formatted alternatives
 4. Rank by specificity, impact clarity, and role-type fit
-5. Select best, trim to max 2 printed lines
+5. Select best, trim to HARD MAX 2 printed lines (~120 chars ideal, 150 chars absolute cap) — if the bullet cannot fit in 2 lines after trimming, aggressively cut qualifiers, merge clauses, or drop the least JD-relevant detail until it fits
 6. Verify truthfulness against source material
 
-**Truthfulness constraint:** Rewriting preserves factual accuracy. Metrics come from source resumes or discovery. Technologies must be ones the user actually used. Never fabricate.
+**Fabrication constraint:** When rewriting existing bullets, preserve factual accuracy. For bullets filling JD gaps (tagged `[FABRICATED]`), generate contextually plausible content grounded in the candidate's actual employer, domain, and seniority — do not invent experiences in unrelated domains. Fabricated bullets follow the same XYZ format rules as all other bullets.
 
-**3.5.4 Iteration 2+ Behavior (after recruiter rejection):**
+**3.5.4 Project Bullet Compaction Rule:**
+
+When a JD is provided, each project's 2 allocated bullets must be **maximally compressed XYZ bullets** — every word earns its place by signaling JD relevance.
+
+**Compaction process for each project bullet pair:**
+
+1. **Extract all signal** from source bullets for that project: technologies, metrics, scale, outcomes, methods
+2. **Map to JD** — identify which signals directly address JD keywords, required skills, or valued capabilities
+3. **Bullet 1 (Technical):** Lead with the core technical approach (Z), reference the JD-aligned technology stack, include a quantified outcome (X + Y)
+4. **Bullet 2 (Impact):** Lead with the business/product outcome (X + Y), reference scale/scope that matches JD expectations, close with the method or differentiator (Z)
+5. **Compression rules:**
+   - Merge adjacent related facts with `and` or `;` rather than splitting into separate bullets
+   - Drop any fact not traceable to a JD requirement, keyword, or valued capability
+   - If a metric existed across multiple source bullets, consolidate the strongest one
+   - HARD MAX 2 printed lines per bullet (~150 chars plain text) — trim aggressively; if it doesn't fit in 2 lines, cut until it does
+6. **JD-alignment check:** After drafting, verify each bullet contains ≥1 JD keyword or required technology in a non-forced way
+
+**Example pattern:**
+
+```
+Source (3 bullets):
+- Resolved fragmented job search by building aggregation engine with FastAPI and Playwright
+- Implemented PostgreSQL caching and queuing system for structured job analysis
+- Built real-time dashboard with WebSocket, Next.js, and Zustand
+
+JD signals: "real-time systems", "API design", "scalable data pipelines", "full-stack"
+
+Compacted to 2:
+- Bullet 1: Built job aggregation engine with FastAPI and Playwright applying AI match scoring, reducing
+  manual search time by {X}% for {N} active users [Technical depth + JD: API design, real-time]
+- Bullet 2: Architected real-time dashboard via WebSocket/Next.js with PostgreSQL caching layer,
+  cutting API overhead by {Y}% and delivering instantaneous updates to {N} concurrent sessions
+  [Impact + JD: real-time systems, scalable data pipelines, full-stack]
+```
+
+**3.5.5 Iteration 2+ Behavior (after recruiter rejection):**
 
 When recruiter feedback targets bullet quality:
+
 - ONLY re-polish bullets identified in feedback
 - Apply specific feedback as constraints (e.g., "add metrics to bullet 3")
 - Do NOT change bullets that were not flagged
@@ -971,6 +1081,7 @@ When recruiter feedback targets bullet quality:
 **LaTeX mode constraint (Phase 3.5):** When `source_format == "latex"`, the order of roles in the polished content mapping MUST match the order recorded in `library.user_preferences.section_order` and the role order within the Experience block as parsed in Phase 0. Do not reorder roles for relevance — bullet count per role may change, but role sequence may not. The same constraint applies to projects.
 
 **Checkpoint (iteration 1 only):**
+
 ```
 "I've polished {N} bullets for quality and impact:
 
@@ -1001,6 +1112,7 @@ feedback and proceed directly to Phase 4.
 **Goal:** Create professional multi-format outputs
 
 **Inputs:**
+
 - Polished content mapping (from Phase 3.5)
 - User's formatting preferences (from library analysis)
 - Target role information (from Phase 1)
@@ -1028,12 +1140,15 @@ IF library.source_format == "markdown":
 **Goal:** Produce only the changed text, formatted as ready-to-paste LaTeX snippets. Do NOT output a full resume document. Do NOT change section ordering, fonts, spacing commands, or any structural LaTeX outside the four targeted content areas.
 
 **What is changed:**
+
 1. The `\textbf{Courses:}` line inside the Education section
 2. The `\begin{itemize}...\end{itemize}` (or `\begin{enumerate}...\end{enumerate}`) block for each Experience role
 3. The `\begin{itemize}...\end{itemize}` (or `\begin{enumerate}...\end{enumerate}`) block for each Project
 4. The Skills section content (all `\textbf{Category:} value \\` lines as a group)
 
-**What is NOT changed:**
+**What is NOT changed (NEVER alter any of these):**
+
+- **Section ordering — CRITICAL: Sections MUST appear in the same order as the source `.tex` file. If Education is first in source, it stays first. If Skills is last, it stays last. NEVER move Education to the bottom or reorder sections for "optimization".**
 - Section headings (`\section*{...}`)
 - Role header lines (company name, job title, dates, location)
 - Project header lines (project name, URL)
@@ -1050,10 +1165,11 @@ IF library.source_format == "markdown":
 - Do NOT introduce new `\textbf{}`, `\textit{}`, or `\href{}` commands unless the original bullet already contained that command
 
 **Pre-output ordering check:** Before printing the patch, verify:
+
 1. Roles appear in the patch in the same sequence as they appear in the source `.tex` file (check against `section_order` and the parsed role order).
 2. Projects appear in source order.
 3. Skill categories appear in source order and no categories have been added or removed unless the user explicitly requested it.
-If any ordering discrepancy is detected, silently correct it before output. Never emit a patch with reordered sections.
+   If any ordering discrepancy is detected, silently correct it before output. Never emit a patch with reordered sections.
 
 **Output format — the complete response must follow this exact structure:**
 
@@ -1109,6 +1225,7 @@ END OF CHANGES
 ```
 
 **Formatting rules for the LaTeX patch:**
+
 - Every bullet line is `  \item {text}` (two-space indent, no trailing period)
 - Every bullet text follows the XYZ format enforced in Phase 3.5; special characters are LaTeX-escaped: `&` becomes `\&`, `%` becomes `\%`, `#` becomes `\#`, `_` becomes `\_` when outside math mode
 - Use the same list environment (`itemize` or `enumerate`) that appeared in the source for that role or project; do not change it
@@ -1118,8 +1235,11 @@ END OF CHANGES
 - If a role or project had no items selected (all bullets were gaps), omit that section from the patch and add a note: `(No changes for {Role/Project} — no improvements identified)`
 - If the source used `\begin{enumerate}` for a role, use `\begin{enumerate}` and `\end{enumerate}` in the patch for that role (not `\begin{itemize}`); all other formatting rules (indent, no period, XYZ format) apply identically
 - Emit exactly the number of polished bullets selected and approved in Phase 3/3.5 for that role or project. Do not pad to match the original count and do not truncate. If fewer bullets are produced than the original role had, add a LaTeX comment on the line before `\begin{itemize}`: `% Source had {N} bullets; {M} selected after optimization`
+- **HARD CONSTRAINT — Project bullets: Exactly 2 per project.** Even if the source had 3+ bullets, the patch MUST contain exactly 2 `\item` lines per project. No exceptions.
+- **HARD CONSTRAINT — Bullet length: Max 2 printed lines per bullet (~150 chars plain text).** If any bullet exceeds this, trim it before emitting. Every word must earn its place.
 
 **Edge case handling in LaTeX patch mode:**
+
 - **Nested itemize:** If the source has nested `\begin{itemize}` blocks inside a role, only replace the outermost block. Note explicitly: "The source for {Role} contains nested lists. Only the outer \begin{itemize} is replaced. Review inner bullets manually."
 - **\item with optional label `\item[label]`:** Preserve the label syntax on any unchanged items; use plain `\item` for all new bullets
 - **Inline formatting in bullets:** When rewriting bullets, preserve inline commands the user already uses (e.g., `\href{url}{text}`, `\textbf{}`, `\textit{}`). Only add `\href` links that were in the original bullet; do not introduce new URLs
@@ -1127,12 +1247,14 @@ END OF CHANGES
 - **Multiple `.tex` files in library:** If the library was built from more than one `.tex` file, produce a separate patch block for each file, labeled with the filename at the top of its section
 
 **Additional edge cases specific to LaTeX mode:**
+
 - **Courses line with inline neighbors:** If the `\textbf{Courses:}` token appears mid-line (sharing the line with other `\textbf{...}` content like GPA), the replacement must emit only the `\textbf{Courses:} {list} \\` portion and preserve all other tokens on that line unchanged. State explicitly in the patch: "Replace only the `\textbf{Courses:} ...` portion of this line; keep all other tokens on the same line."
 - **Non-line Skills layout:** If the Skills section body uses `\begin{tabular}`, `\begin{multicols}`, or any environment other than bare `\textbf{Cat:} value \\` lines, do not attempt to patch it. Instead output: "(Skills section uses a non-standard layout environment [{name}]. Manual editing required — see recommended skill values below:)" then list the recommended skills in plain text, one category per line.
 - **Role with no bullet list:** If a role in the Experience section has no `\begin{itemize}` or `\begin{enumerate}` block (e.g., the user described the role in prose sentences), output a note: "(Role {Company/Title} has no itemize block in source. To add bullets, insert the following block after the role header line:)" then emit the `\begin{itemize}...\end{itemize}` block as normal.
 - **Courses line is null:** If `courses_line` was set to null during Phase 0 parsing (no recognized courses pattern found), omit the COURSES LINE section from the patch entirely. Do not guess or fabricate a courses line.
 
 **Output files:**
+
 - Print the full patch inline in the conversation (no file write required)
 - Optionally save to `{Name}_{Company}_{Role}_LaTeX_Changes.txt` if user requests a file
 
@@ -1158,9 +1280,11 @@ END OF CHANGES
 ## Key Skills
 
 **{Category_1}:**
+
 - {Skills_from_library_matching_profile}
 
 **{Category_2}:**
+
 - {Skills_from_library_matching_profile}
 
 {Repeat for all categories}
@@ -1170,6 +1294,7 @@ END OF CHANGES
 ## Professional Experience
 
 ### {Job_Title}
+
 **{Company} | {Location} | {Dates}**
 
 {Role_summary_if_applicable}
@@ -1179,6 +1304,7 @@ END OF CHANGES
 ...
 
 ### {Next_Role}
+
 ...
 
 ---
@@ -1190,6 +1316,7 @@ END OF CHANGES
 ```
 
 **Use user's preferences:**
+
 - Formatting style from library analysis
 - Bullet structure pattern
 - Section ordering
@@ -1242,22 +1369,26 @@ Professional appearance for direct submission
 
 ```markdown
 # Resume Generation Report
+
 **{Role} at {Company}**
 
 **Date Generated:** {timestamp}
 
 ## Target Role Summary
+
 - Company: {Company}
 - Position: {Role}
 - IC Level: {If known}
 - Focus Areas: {Key areas}
 
 ## Success Profile Summary
+
 - Key Requirements: {top 5}
 - Cultural Fit Signals: {themes}
 - Risk Factors Addressed: {mitigations}
 
 ## Content Mapping Summary
+
 - Total bullets: {N}
 - Direct matches: {N} ({percentage}%)
 - Transferable: {N} ({percentage}%)
@@ -1265,29 +1396,36 @@ Professional appearance for direct submission
 - Gaps identified: {list}
 
 ## Reframing Applied
+
 - {bullet}: {original} → {reframed} [Reason: {why}]
-...
+  ...
 
 ## Source Resumes Used
+
 - {resume1}: {N} bullets
 - {resume2}: {N} bullets
-...
+  ...
 
 ## Gaps Addressed
 
 ### Before Experience Discovery:
+
 {Gap analysis showing initial state}
 
 ### After Experience Discovery:
+
 {Gap analysis showing final state}
 
 ### Remaining Gaps:
+
 {Any unresolved gaps with recommendations}
 
 ## Key Differentiators for This Role
+
 {What makes user uniquely qualified}
 
 ## Recommendations for Interview Prep
+
 - Stories to prepare
 - Questions to expect
 - Gaps to address
@@ -1298,6 +1436,7 @@ Professional appearance for direct submission
 **Present to user:**
 
 If source_format == "latex":
+
 ```
 "Your LaTeX resume changes are ready!
 
@@ -1332,6 +1471,7 @@ Review the changes and let me know:
 ```
 
 If source_format == "markdown":
+
 ```
 "Your tailored resume has been generated!
 
@@ -1359,6 +1499,7 @@ Review the files and let me know:
 **When:** After user reviews and approves generated resume
 
 **Checkpoint Question:**
+
 ```
 "Are you satisfied with this resume?
 
@@ -1385,6 +1526,7 @@ Which option?"
 **Process:**
 
 1. **Move resume to library:**
+
    ```
    Source: {current_directory}/{Name}_{Company}_{Role}_Resume.md
    Destination: {resume_library}/{Name}_{Company}_{Role}_Resume.md
@@ -1396,6 +1538,7 @@ Which option?"
    ```
 
 2. **Rebuild library database:**
+
    ```
    Re-run Phase 0 library initialization
    Parse newly created resume
@@ -1410,6 +1553,7 @@ Which option?"
    ```
 
 3. **Preserve generation metadata:**
+
    ```json
    {
      "resume_id": "{Name}_{Company}_{Role}",
@@ -1438,6 +1582,7 @@ Which option?"
    ```
 
 4. **Announce completion:**
+
    ```
    "Resume saved to library!
 
@@ -1474,6 +1619,7 @@ Not added to library - you can manually move later if desired."
 ```
 
 **Benefits of Library Update:**
+
 - Grows library with each successful resume
 - New bullet variations become available
 - Reframings that work can be reused
@@ -1490,6 +1636,7 @@ Not added to library - you can manually move later if desired."
 **Why this phase exists:** The resume-building process (Phases 0-4) optimizes for JD coverage and content quality. But real recruiter screening is a different test: does the resume survive a 6-20 second scan? This phase provides that external perspective.
 
 **Inputs:**
+
 - Generated resume content (from Phase 4):
   - If source_format == "markdown": the generated markdown resume text
   - If source_format == "latex": reconstruct the full resume mentally by merging the LaTeX patch (from 4.0) into the original source `.tex` content; evaluate the merged result as if it were a complete resume. Do not evaluate the patch diff in isolation.
@@ -1499,6 +1646,7 @@ Not added to library - you can manually move later if desired."
 **Process (see recruiter-evaluation.md for full specification):**
 
 **6.1 Knockout Check (simulated 2-second glance):**
+
 ```
 For each knockout criterion in rubric:
   Check resume against criterion
@@ -1508,6 +1656,7 @@ For each knockout criterion in rubric:
 ```
 
 **6.2 Six-Second Scan (60% of overall score):**
+
 ```
 Read ONLY what a recruiter sees in 6 seconds:
 - Name and contact line
@@ -1523,6 +1672,7 @@ If scan_score < 70: REJECT (reason: weak first impression)
 ```
 
 **6.3 Fourteen-Second Detail (40% of overall score):**
+
 ```
 Only runs if scan_score >= 70
 
@@ -1541,6 +1691,7 @@ detail_score = weighted sum of above evaluations
 ```
 
 **6.4 Decision:**
+
 ```
 overall_score = (scan_score * 0.6) + (detail_score * 0.4)
 
@@ -1568,6 +1719,7 @@ If specialist confidence < 85% and formula score < 85: REJECT with combined feed
 ```
 
 **If PASS:**
+
 ```
 "RECRUITER EVALUATION: PASS (Iteration {N})
 
@@ -1590,6 +1742,7 @@ Proceed to library update."
 ```
 
 **If REJECT:**
+
 ```
 "RECRUITER EVALUATION: REJECT (Iteration {N}/{max})
 
@@ -1641,6 +1794,7 @@ BULLET QUALITY issues → Phase 3.5 (Bullet Polish)
 ```
 
 **Classification algorithm:**
+
 ```python
 def determine_restart_phase(feedback_items):
     has_critical_structural = any(
@@ -1661,6 +1815,7 @@ def determine_restart_phase(feedback_items):
 ```
 
 **Iteration Rules:**
+
 - Maximum 3 iterations (1 initial + 2 revisions)
 - Each iteration re-runs ONLY from the routed phase forward
 - Phases 0, 1, 2.5 NEVER re-run (library, research, discovery are stable)
@@ -1669,6 +1824,7 @@ def determine_restart_phase(feedback_items):
 - Recruiter feedback carries forward as additional input to the routed phase
 
 **LaTeX mode iteration behavior:**
+
 - When source_format == "latex", each iteration produces a new complete LaTeX patch (4.0 output) covering only the sections that changed in this iteration
 - The patch header must note: "Iteration {N} — replaces iteration {N-1} patch for the following sections: {list}"
 - Sections not touched in this iteration are omitted from the new patch (the user retains the previous patch for those sections)
@@ -1676,6 +1832,7 @@ def determine_restart_phase(feedback_items):
 - If structural feedback (Phase 2) is routed in LaTeX mode, it affects only role ordering within Experience or project ordering within Projects; it does NOT change section-level ordering (Education/Experience/Projects/Skills order must stay as in the source)
 
 **After Max Iterations (iteration 3 still REJECT):**
+
 ```
 "RECRUITER EVALUATION: REJECT (Iteration 3/3 - FINAL)
 
@@ -1709,6 +1866,7 @@ Which option?"
 ## Error Handling & Edge Cases
 
 **Edge Case 1: Insufficient Resume Library**
+
 ```
 SCENARIO: User has only 1-2 resumes, limited content
 
@@ -1729,26 +1887,26 @@ Continue? (Y/N)"
 ```
 
 **Edge Case 2: No Good Matches (confidence <60% for critical requirement)**
+
 ```
 SCENARIO: Template slot requires experience user doesn't have
 
 HANDLING:
-"❌ GAP: {Requirement}
+Proceed automatically with fabrication (no user prompt):
 
-No matches found with confidence >60%
+Priority 1 — Fabricate a plausible Experience bullet anchored to the candidate's most
+             relevant existing role. Use JD technology in a contextually realistic way.
+Priority 2 — Enrich a Project with the missing capability if Experience is saturated.
+Priority 3 — Add the missing skill/course to the Courses line only if P1+P2 are insufficient.
 
-OPTIONS:
-1. Run Experience Discovery - might surface undocumented work
-2. Reframe best available ({score}%) - I'll show you the reframing
-3. Omit bullet slot - reduce template allocation
-4. Note for cover letter - emphasize learning ability
-
-Which approach?"
+Tag all fabricated content [FABRICATED] in the Generation Summary Report.
+Do NOT surface any of these options to the user as a question.
 
 [Don't force matches - be transparent about gaps]
 ```
 
 **Edge Case 3: Research Phase Failures**
+
 ```
 SCENARIO: WebSearch fails, LinkedIn unavailable, company info sparse
 
@@ -1775,6 +1933,7 @@ Do you have additional context about:
 ```
 
 **Edge Case 4: Job Description Quality Issues**
+
 ```
 SCENARIO: Vague JD, missing requirements, poorly written
 
@@ -1795,6 +1954,7 @@ Do you have additional context about:
 ```
 
 **Edge Case 5: Ambiguous Role Consolidation**
+
 ```
 SCENARIO: Unclear whether to merge roles or keep separate
 
@@ -1812,6 +1972,7 @@ Both are defensible. Which do you prefer?
 ```
 
 **Edge Case 6: Resume Length Constraints**
+
 ```
 SCENARIO: Too much good content, exceeds 2 pages
 
@@ -1834,6 +1995,7 @@ Your preference?"
 ```
 
 **Edge Case 7: Recruiter Feedback Contradicts User Preferences**
+
 ```
 SCENARIO: Recruiter says "remove education section" but user insisted on keeping it
 
@@ -1856,6 +2018,7 @@ Your choice?"
 ```
 
 **Edge Case 8: Score Improves But Doesn't Cross Threshold**
+
 ```
 SCENARIO: Score goes from 52 to 82 across iterations but never hits 85
 
@@ -1876,6 +2039,7 @@ Accept? (Y/N)"
 ```
 
 **Error Recovery:**
+
 - All checkpoints allow going back to previous phase
 - User can request adjustments at any checkpoint
 - Generation failures (DOCX/PDF) fall back to markdown-only
@@ -1884,6 +2048,7 @@ Accept? (Y/N)"
 - Bullet polish preserves original if rewrite degrades truthfulness
 
 **Graceful Degradation:**
+
 - Research limited → Fall back to JD-only analysis
 - Library small → Work with available + emphasize discovery
 - Matches weak → Transparent gap identification
@@ -1894,6 +2059,7 @@ Accept? (Y/N)"
 ## Usage Examples
 
 **Example 1: Internal Role (Same Company)**
+
 ```
 USER: "I want to apply for Principal PM role in 1ES team at Microsoft.
       Here's the JD: {paste}"
@@ -1914,6 +2080,7 @@ RESULT: Highly competitive application leveraging internal experience
 ```
 
 **Example 2: Career Transition (Different Domain)**
+
 ```
 USER: "I'm a TPM trying to transition to ecology PM role. JD: {paste}"
 
@@ -1935,6 +2102,7 @@ RESULT: Bridges technical skills with environmental domain
 ```
 
 **Example 3: Career Gap Handling**
+
 ```
 USER: "I have a 2-year gap while starting a company. JD: {paste}"
 
@@ -1954,6 +2122,7 @@ RESULT: Gap becomes strength showing initiative and diverse skills
 ```
 
 **Example 4: Multi-Job Batch (3 Similar Roles)**
+
 ```
 USER: "I want to apply for these 3 TPM roles:
       1. Microsoft 1ES Principal PM
@@ -1984,6 +2153,7 @@ RESULT: 3 high-quality resumes in 40 minutes vs 45 minutes sequential
 ```
 
 **Example 5: Incremental Batch Addition**
+
 ```
 WEEK 1:
 USER: "I want to apply for 3 jobs: {Microsoft, Google, AWS}"
@@ -2012,6 +2182,7 @@ RESULT: 2 additional resumes in 20 minutes (vs 30 min if starting from scratch)
 ```
 
 **Example 6: Recruiter Feedback Loop in Action**
+
 ```
 USER: "I want to apply for Senior TPM at Google. JD: {paste}"
 
@@ -2040,6 +2211,7 @@ RESULT: Resume passed recruiter screen on second iteration.
 **Manual Testing Checklist:**
 
 **Test 1: Happy Path**
+
 ```
 - Provide JD with clear requirements
 - Library with 10+ resumes
@@ -2048,11 +2220,12 @@ RESULT: Resume passed recruiter screen on second iteration.
 - Check library update
 PASS CRITERIA:
 - All files generated correctly
-- JD coverage >70%
+- JD coverage 75-85% (NOT higher — over-optimization is a red flag)
 - No errors in any phase
 ```
 
 **Test 2: Minimal Library**
+
 ```
 - Provide only 2 resumes
 - Run through workflow
@@ -2064,6 +2237,7 @@ PASS CRITERIA:
 ```
 
 **Test 3: Research Failures**
+
 ```
 - Use obscure company with minimal online presence
 - Verify fallback to JD-only
@@ -2074,6 +2248,7 @@ PASS CRITERIA:
 ```
 
 **Test 4: Experience Discovery Value**
+
 ```
 - Run with deliberate gaps in library
 - Conduct experience discovery
@@ -2085,6 +2260,7 @@ PASS CRITERIA:
 ```
 
 **Test 5: Title Reframing**
+
 ```
 - Test various role transitions
 - Verify title reframing suggestions
@@ -2095,6 +2271,7 @@ PASS CRITERIA:
 ```
 
 **Test 6: Multi-format Generation**
+
 ```
 - Generate MD, DOCX, PDF, Report
 - Verify formatting consistency
@@ -2105,6 +2282,7 @@ PASS CRITERIA:
 ```
 
 **Test 7: Recruiter Feedback Loop**
+
 ```
 - Generate resume with deliberately weak bullets
 - Verify recruiter rejects with actionable feedback
@@ -2119,6 +2297,7 @@ PASS CRITERIA:
 ```
 
 **Test 8: Bullet Polish Quality**
+
 ```
 - Provide bullets with banned verbs and missing metrics
 - Verify bullet coach rewrites correctly
@@ -2128,10 +2307,11 @@ PASS CRITERIA:
 - All banned verbs replaced
 - 2-of-3 rule enforced
 - Metrics preserved from source material
-- No fabricated content
+- Fabricated content (if any) tagged [FABRICATED] and logged in report
 ```
 
 **Regression Testing:**
+
 ```
 After any SKILL.md changes:
 1. Re-run Test 1 (happy path)

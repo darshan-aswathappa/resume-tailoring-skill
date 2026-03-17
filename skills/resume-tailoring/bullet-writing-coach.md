@@ -31,7 +31,7 @@ X-first (acceptable when impact is the headline):
 
 ## Bullet Constraints
 
-1. One sentence per bullet, maximum 2 printed lines (~120 characters ideal, 150 hard cap)
+1. **HARD MAX: One sentence per bullet, maximum 1-2 printed lines (~120 characters ideal, 150 characters absolute cap).** If a bullet exceeds 150 characters of plain text, it MUST be trimmed — cut qualifiers, merge clauses, or drop the least impactful detail. A 3-line bullet is NEVER acceptable.
 2. Start every bullet with a strong past-tense action verb
 3. No personal pronouns -- never use I, we, my, our, us, their
 4. No periods at the end of bullets

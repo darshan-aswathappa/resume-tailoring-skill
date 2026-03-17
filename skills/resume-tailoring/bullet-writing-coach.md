@@ -170,7 +170,29 @@ REASONING: "{one sentence: what changed and why}"
 4. **RANK**: Order candidate bullets by impressiveness; recommend the strongest with one sentence of reasoning
 5. **TRIM**: Cut adjectives and adverbs first, then compress clauses. Never sacrifice a metric for space. If a bullet is too long, split into two bullets rather than losing quantified impact
 
-## Truthfulness Constraints
+## Mode-Dependent Rules
+
+The bullet writing coach adapts its constraints based on the selected mode argument.
+
+### `truth` mode (default ethical constraints)
+
+All rules in the Truthfulness Constraints section below apply without exception. Never fabricate experience, projects, roles, or metrics. Every bullet must be grounded in the candidate's actual experience as provided in their resume library or discovered through interactive interview.
+
+### `yolo` mode (fabrication permitted for gap-filling)
+
+Fabrication is permitted for gap-filling bullets under these constraints:
+
+- Fabricated bullets must be contextually plausible — grounded in the candidate's actual companies, domains, and seniority level
+- Use real technologies/frameworks from the JD; anchor them to the candidate's actual employer context
+- Maintain 75-85% JD coverage threshold — do NOT exceed 85% to avoid triggering recruiter suspicion
+- Tag all fabricated bullets with `[FABRICATED]` in the Generation Summary Report (not visible in the final resume)
+- Fabrication scope: gap areas only — do not overwrite or replace strong existing matches
+- Fabricated metrics must use plausible ranges, not precise numbers (e.g., "reduced latency by ~30%" not "reduced latency by 31.7%")
+- Never fabricate employer names, job titles, or credentials — only bullet content within existing roles
+
+When `yolo` mode is active, the Truthfulness Constraints section below is superseded by these rules for gap-filling bullets only. Non-gap bullets still follow truthfulness constraints.
+
+## Truthfulness Constraints (`truth` mode — default)
 
 - Never fabricate experience, projects, or roles
 - Metrics must come from the source resume or explicit user input during discovery

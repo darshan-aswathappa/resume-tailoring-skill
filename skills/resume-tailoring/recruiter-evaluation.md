@@ -363,7 +363,7 @@ Proceeding to Phase {N} with {count} feedback items.
 
 ### Iteration Limits
 
-- Iterate until overall score >= 85% acceptance threshold (no hard maximum — continue until threshold is reached or no further improvement is possible after 3 consecutive attempts with score delta < 2 points)
+- Maximum 3 iterations (1 initial + 2 revisions); terminate early if 3 consecutive iterations gain < 2 points
 - Each iteration must show score improvement or the loop terminates early
 - Track full iteration history for transparency
 

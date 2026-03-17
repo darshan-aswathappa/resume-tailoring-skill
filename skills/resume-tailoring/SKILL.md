@@ -1,15 +1,21 @@
 ---
 name: resume-tailoring
-description: Use when creating tailored resumes for job applications - researches company/role, creates optimized templates, conducts branching experience discovery to surface undocumented skills, generates professional multi-format resumes enriched with contextually relevant experience and keywords, and validates output through recruitment specialist agent and iterative feedback loop targeting 85% acceptance
+description: Use when creating tailored resumes for job applications - accepts mode (yolo/truth), resume path, and job description as arguments. Researches company/role, creates optimized templates, conducts branching experience discovery (truth mode) or silent fabrication (yolo mode), generates professional multi-format resumes, and validates output through recruitment specialist agent and iterative feedback loop targeting 85% acceptance
 ---
 
 # Resume Tailoring Skill
 
 ## Overview
 
-Generates high-quality, tailored resumes optimized for specific job descriptions. Builds resumes around the holistic person — surfacing undocumented experiences where possible, and fabricating contextually plausible experience where gaps remain, to achieve 75-85% JD keyword coverage with a 70/30 hard-skill-to-soft-skill ratio.
+Generates high-quality, tailored resumes optimized for specific job descriptions. Behavior depends on the selected **mode**:
 
-**Core Principle:** Optimize fit through intelligent tailoring — reframe, emphasize, enrich, and where needed, fabricate contextually grounded experience and keywords that align with the candidate's background and the target role. When gaps exist that cannot be filled from the library, generate plausible experience at the **Experience** level first, then **Projects**, and only rarely at **Courses**. Never ask the user discovery questions to fill gaps — proceed with fabrication and iterate until the coverage threshold is met.
+- **`yolo` mode:** Builds resumes around the holistic person — surfacing undocumented experiences where possible, and fabricating contextually plausible experience where gaps remain, to achieve 75-85% JD keyword coverage with a 70/30 hard-skill-to-soft-skill ratio.
+- **`truth` mode:** Builds resumes strictly from actual experience — surfacing undocumented experiences through interactive branching interviews, reframing and emphasizing existing content, but never fabricating. Gaps that remain after discovery are flagged transparently.
+
+**Core Principle (mode-dependent):**
+
+- **`yolo`:** Optimize fit through intelligent tailoring — reframe, emphasize, enrich, and where needed, fabricate contextually grounded experience and keywords that align with the candidate's background and the target role. When gaps exist that cannot be filled from the library, generate plausible experience at the **Experience** level first, then **Projects**, and only rarely at **Courses**. Maintain 75-85% JD coverage — do NOT exceed 85% as a near-perfect match looks fabricated and triggers recruiter suspicion.
+- **`truth`:** Optimize fit through intelligent tailoring — reframe, emphasize, and enrich from actual experience only. When gaps remain after interactive discovery, flag them transparently in the report. Never fabricate experience, projects, or credentials. A lower coverage score built on truth is better than a higher score built on fiction.
 
 **Keyword Matching Target: 75-85% JD coverage.** Do NOT aim for 90%+ — a near-perfect match looks fabricated and triggers recruiter suspicion. The ratio should be approximately **70% hard skills / technical requirements and 30% soft skills / leadership qualities**. A 100% keyword match is a red flag, not a goal. Leave natural gaps that a real candidate would have.
 
@@ -32,11 +38,29 @@ Use this skill when:
 
 ## Quick Start
 
-**Required from user:**
+**Arguments (positional):**
 
-1. Job description (text or URL)
-2. Resume library location (defaults to `resumes/` in current directory)
-3. Resume source format: markdown (`.md`) or LaTeX (`.tex`)
+```
+/resume-tailoring <mode> <resume_path> <job_description>
+```
+
+| Argument | Required | Values | Description |
+|----------|----------|--------|-------------|
+| `mode` | Yes | `yolo` or `truth` | `yolo`: fabrication permitted for gap-filling (75-85% coverage target). `truth`: interview-based discovery only, no fabrication — work with what we have. |
+| `resume_path` | Yes | File path | Path to the source resume in LaTeX (.tex) format |
+| `job_description` | Yes | Text or URL | The target job description (paste full text or provide URL) |
+
+**Example:**
+```
+/resume-tailoring yolo ./resumes/my-resume.tex "Senior Software Engineer at Google..."
+/resume-tailoring truth ./resumes/my-resume.tex "https://careers.microsoft.com/..."
+```
+
+**Required from user (via positional arguments):**
+
+1. Mode: `yolo` (fabrication) or `truth` (interview-only, no fabrication)
+2. Resume path: Path to LaTeX (.tex) source resume
+3. Job description: Full text or URL
 
 **Workflow:**
 
@@ -124,9 +148,11 @@ When multi-job mode is activated, see `multi-job-workflow.md` for complete workf
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ PHASE -1: Recruiter Intake (per-job rubrics)                │
+│ PHASE -1: Recruiter Intake (per-job rubrics, MODE-AWARE)    │
 │ - Build evaluation rubric from each JD (sealed)             │
 │ - Define knockout criteria, scan priorities, triggers       │
+│ - yolo: rubric permits fabricated experience signals        │
+│ - truth: rubric evaluates only verifiable content           │
 └─────────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -715,29 +741,42 @@ Wait for user approval before proceeding.
 
 **Output:** Approved template skeleton with guidance for each section
 
-### Phase 2.5: Gap Fabrication (AUTO — no user prompt)
+### Phase 2.5: Gap Resolution (MODE-DEPENDENT)
 
-**Goal:** Fill all JD gaps with contextually plausible experience. Do NOT ask the user discovery questions.
+**Goal:** Address JD gaps identified after template approval. Behavior depends on the selected mode.
 
-**When to trigger:**
+**When to trigger:** After template approval, for any gap with confidence <75%.
+
+---
+
+#### Phase 2.5 — `yolo` mode: Silent Fabrication (AUTO — no user prompt)
+
+Silently enumerate all gaps and generate fabricated content:
 
 ```
-After template approval, automatically for any gap (confidence <75%):
-
-- Silently enumerate all gaps
-- For each gap: generate fabricated content in priority order:
-    1. EXPERIENCE bullets (primary) — add plausible bullet(s) to the most relevant role
-    2. PROJECTS (secondary) — add or enrich a project if experience slots are exhausted
-    3. COURSES (rare fallback) — only if neither Experience nor Projects can absorb the gap
-- Do NOT surface this process to the user as a question
-- Log all fabricated items in the Generation Summary Report (Phase 4.4)
+For each gap (confidence <75%):
+- Priority 1: EXPERIENCE bullets — add plausible bullet(s) to the most relevant role
+- Priority 2: PROJECTS — add or enrich a project if experience slots are exhausted
+- Priority 3: COURSES (rare fallback) — only if neither Experience nor Projects can absorb the gap
 ```
 
-**Branching Interview Process:**
+**Fabrication Rules:**
+- Contextual grounding: Fabricated content must be plausible given the candidate's actual companies, domains, and seniority level — do not invent unrelated domains
+- Specificity: Use real technologies/frameworks from the JD; anchor them to the candidate's actual employer context
+- Scope: Focus fabrication on gap areas only; do not overwrite strong existing matches
+- Coverage cap: Maintain 75-85% JD coverage. Do NOT exceed 85% — a near-perfect match triggers recruiter suspicion
+- Transparency: Log all fabricated items in the Generation Summary Report with `[FABRICATED]` tag
+- Do NOT surface this process to the user as questions or checkpoints
 
-**Approach:** Conversational with follow-up questions based on answers
+**Output:** Gaps filled with fabricated content, logged in report. Ready for Phase 3 matching.
 
-**For each gap, conduct branching dialogue (see branching-questions.md):**
+---
+
+#### Phase 2.5 — `truth` mode: Interactive Branching Interview
+
+Conduct a conversational branching interview to surface undocumented experiences (see `branching-questions.md` for full question patterns).
+
+**For each gap, conduct branching dialogue:**
 
 1. **Start with open probe:**
    - Technical gap: "Have you worked with {skill}?"
@@ -775,11 +814,9 @@ After template approval, automatically for any gap (confidence <75%):
 - Addresses: {Which gaps}
 - Bullet draft: "{Achievement-focused bullet}"
 - Confidence: {How well fills gap - percentage}
-
-### Experience 2: ...
 ```
 
-**Integration Options:**
+**Integration Options (truth mode only):**
 
 After discovery session:
 
@@ -794,15 +831,9 @@ After discovery session:
 Let me know for each experience."
 ```
 
-**Fabrication Rules:**
+**Remaining gaps after interview:** Flag in the Generation Summary Report as unresolved. Do NOT fabricate. Recommend addressing in cover letter or interview prep.
 
-- **Priority order:** Experience bullets → Project bullets → Courses (last resort)
-- **Contextual grounding:** Fabricated content must be plausible given the candidate's actual companies, domains, and seniority level — do not invent unrelated domains
-- **Specificity:** Use real technologies/frameworks from the JD; anchor them to the candidate's actual employer context (e.g., "at {Company}, built X using {JD technology}")
-- **Scope:** Focus fabrication on gap areas only; do not overwrite strong existing matches
-- **Transparency:** Log all fabricated items in the Generation Summary Report with `[FABRICATED]` tag; do not surface this to the user as questions or checkpoints during assembly
-
-**Output:** New experiences integrated into library, ready for matching
+**Output:** Discovered experiences integrated into library (user-approved only). Remaining gaps flagged, not filled.
 
 ### Phase 3: Assembly Phase
 
@@ -834,10 +865,10 @@ Let me know for each experience."
 3. **Rank candidates by score**
    - Sort high to low
    - Group by confidence band:
-     - 90-100%: DIRECT
-     - 75-89%: TRANSFERABLE
-     - 60-74%: ADJACENT
-     - <60%: WEAK/GAP
+     - 90-100%: DIRECT — Use with confidence
+     - 75-89%: TRANSFERABLE — Strong candidate, reframe terminology
+     - 60-74%: ADJACENT — Acceptable with reframing
+     - <60%: GAP — Flag as unaddressed requirement
 
 4. **Present top 3 matches with analysis:**
 
@@ -874,19 +905,16 @@ Let me know for each experience."
 
    BEST AVAILABLE: {score}% - "{bullet_text}"
 
-   AUTO-FABRICATION:
-   Priority 1 — Add fabricated bullet to most relevant Experience role:
-     Fabricated: "{contextually_plausible_bullet}" [FABRICATED]
-     Grounding: {why this is plausible for this candidate's company/domain}
-     New confidence: {score}%
+   RESOLUTION:
+   - In `yolo` mode: Gap was already addressed in Phase 2.5 (fabrication).
+     If still unresolved, flag in report as: "Gap not addressable within
+     75-85% coverage target."
+   - In `truth` mode: Gap was surfaced in Phase 2.5 (interview).
+     If still unresolved, flag in report as: "Unresolved gap — recommend
+     addressing in cover letter or interview preparation."
 
-   Priority 2 (if Experience slots exhausted) — Enrich a Project bullet:
-     Fabricated: "{project_bullet_with_jd_technology}" [FABRICATED]
-
-   Priority 3 (rare, if P1+P2 insufficient) — Add to Courses line:
-     Fabricated: "{relevant_course_name}" [FABRICATED]
-
-   Do NOT ask the user which option to use. Proceed automatically.
+   Do NOT fabricate in Phase 3 regardless of mode. Phase 2.5 is the sole
+   owner of gap resolution.
    ```
 
 **3.2 Content Reframing:**
@@ -1713,10 +1741,13 @@ SPECIALIST REVIEW:
 Ask: "Given these scores and resume highlights, would you forward this candidate?
 What is your confidence level (0-100%) that this candidate would be accepted?"
 
-If specialist confidence >= 85%: Override to PASS regardless of formula score
+If specialist confidence >= 85% AND formula score >= 70: Override to PASS
+If specialist confidence >= 85% BUT formula score < 70: Do NOT override — floor constraint prevents PASS on fundamentally weak resumes
 If specialist confidence < 85% but formula score >= 85: Proceed with PASS
 If specialist confidence < 85% and formula score < 85: REJECT with combined feedback
 ```
+
+**Limitation note:** The recruitment specialist agent and the formula evaluator are the same underlying LLM. The specialist override serves as a second-pass heuristic, not an independent evaluation.
 
 **If PASS:**
 
@@ -1816,7 +1847,7 @@ def determine_restart_phase(feedback_items):
 
 **Iteration Rules:**
 
-- Maximum 3 iterations (1 initial + 2 revisions)
+- Maximum 3 iterations (1 initial + 2 revisions); terminate early if 3 consecutive iterations gain < 2 points
 - Each iteration re-runs ONLY from the routed phase forward
 - Phases 0, 1, 2.5 NEVER re-run (library, research, discovery are stable)
 - Phase 2 re-runs ONLY on structural feedback (rare)

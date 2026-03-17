@@ -4,6 +4,15 @@
 
 Conversational discovery with follow-up questions based on answers. NOT a static questionnaire - each answer informs the next question.
 
+## Mode Gate
+
+This file is used **only in `truth` mode**.
+
+- **`truth` mode:** Full interactive branching interview as documented below. Every gap triggers a conversational discovery session with the user.
+- **`yolo` mode:** This file is NOT used. Phase 2.5 proceeds with silent fabrication instead. No user interaction occurs for gap resolution.
+
+If the current session is running in `yolo` mode, skip this file entirely and return to Phase 2.5 fabrication logic in SKILL.md.
+
 ## Multi-Job Context
 
 When running discovery for multiple jobs (multi-job mode), provide context about which jobs the gap appears in:

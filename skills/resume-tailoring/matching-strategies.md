@@ -62,11 +62,10 @@ Overall = (Direct × 0.4) + (Transferable × 0.3) + (Adjacent × 0.2) + (Impact 
 ```
 
 **Confidence Bands:**
-- 90-100%: DIRECT - Use with confidence
-- 75-89%: TRANSFERABLE - Strong candidate
-- 60-74%: ADJACENT - Acceptable with reframing
-- 45-59%: WEAK - Consider only if no better option
-- <45%: GAP - Flag as unaddressed requirement
+- 90-100%: DIRECT — Use with confidence
+- 75-89%: TRANSFERABLE — Strong candidate, reframe terminology as needed
+- 60-74%: ADJACENT — Acceptable with reframing
+- <60%: GAP — Flag as unaddressed requirement
 
 ## Content Reframing Strategies
 

@@ -11,6 +11,89 @@ Handles 3-5 similar jobs efficiently by consolidating experience discovery while
 - Moderately similar roles (60%+ requirement overlap)
 - Continuous workflow (add jobs incrementally)
 
+## Phase -1: Rubric Generation (MODE-AWARE)
+
+**Goal:** Generate sealed evaluation rubrics for each job before resume building begins.
+
+**Timing:** Runs during batch initialization, before Phase 0 intake completes. Each job gets its own rubric because different JDs produce different evaluation criteria.
+
+**Mode-Aware Behavior:**
+
+- **`yolo` mode:** Rubric permits fabricated experience signals. Knockout criteria focus on formatting, seniority signals, and role-fit — not on verifiable employment claims. Forward triggers may include plausible but unverifiable experience.
+- **`truth` mode:** Rubric evaluates only verifiable content. Knockout criteria include missing verifiable credentials or certifications. Forward triggers require evidence-backed claims.
+
+**Process (per job):**
+
+1. **Invoke Recruitment Specialist Agent** with role and company context
+2. **Build Rubric Components:**
+   - **Knockout Criteria:** Conditions for instant discard (HARD or SOFT severity)
+   - **Scan Priorities:** 4-5 items with weights summing to 100 (what recruiter reads in first 6 seconds)
+   - **Forward Triggers:** 3-5 specific achievements that would make the recruiter forward the resume
+   - **Differentiators:** What separates good from great candidates
+3. **Set Pass Thresholds:**
+   - Overall score >= 85
+   - Scan score >= 70
+   - Zero knockouts
+4. **Seal Rubric:** Rubric is not shared with Phases 0-4. Only Phase 3E evaluation sees it.
+
+**Rubric Data Structure:**
+
+```json
+{
+  "role": "{Role}",
+  "company": "{Company}",
+  "mode": "{yolo|truth}",
+  "knockout_criteria": [
+    {
+      "criterion": "Missing required certification",
+      "check": "Resume must mention required cert in experience or education",
+      "severity": "HARD"
+    }
+  ],
+  "scan_priorities": [
+    {
+      "item": "Current title + company signal",
+      "weight": 25,
+      "look_for": "Most recent title signals relevant experience"
+    }
+  ],
+  "forward_triggers": [
+    {
+      "trigger": "Led infrastructure migration at scale",
+      "evidence_type": "experience_bullet",
+      "jd_source": "Requirement: 5+ years infrastructure program management"
+    }
+  ],
+  "differentiators": [
+    "Career narrative progresses toward this role",
+    "Evidence of both building and operating systems"
+  ],
+  "pass_thresholds": {
+    "overall_minimum": 85,
+    "scan_score_minimum": 70,
+    "knockouts_allowed": 0
+  }
+}
+```
+
+**Batch State Integration:**
+
+Add rubrics to `_batch_state.json`:
+
+```json
+{
+  "batch_id": "batch-YYYY-MM-DD-slug",
+  "mode": "yolo|truth",
+  "rubrics": {
+    "job-1": { "sealed": true, "knockout_count": 3, "trigger_count": 4 },
+    "job-2": { "sealed": true, "knockout_count": 2, "trigger_count": 5 }
+  },
+  "jobs": [...]
+}
+```
+
+**Output:** Sealed rubrics stored per-job. Not visible to resume building phases. Used exclusively by Phase 3E evaluation.
+
 ## Phase 0: Job Intake & Batch Initialization
 
 **Goal:** Collect all job descriptions and initialize batch structure
@@ -82,6 +165,8 @@ Initialize _batch_state.json:
   "created": "2025-11-04T10:30:00Z",
   "current_phase": "intake",
   "processing_mode": "interactive",
+  "mode": "yolo",
+  "rubrics": {},
   "jobs": [
     {
       "job_id": "job-1",
@@ -754,7 +839,7 @@ All saved to: `job-{N}-{company-slug}/`
 ├─ Knockout check against job-specific rubric
 ├─ 6-second scan evaluation (60% weight)
 ├─ 14-second detail evaluation (40% weight)
-├─ PASS (>= 70 overall) or REJECT with feedback
+├─ PASS (overall >= 85, scan >= 70, zero knockouts) or REJECT with feedback
 └─ If REJECT: feedback loop within this job (max 3 iterations)
 ```
 

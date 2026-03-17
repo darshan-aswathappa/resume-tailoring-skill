@@ -127,8 +127,8 @@ What separates a resume that gets forwarded from one that gets forwarded with a 
     "Evidence of both building and operating production systems"
   ],
   "pass_thresholds": {
-    "overall_minimum": 70,
-    "scan_score_minimum": 60,
+    "overall_minimum": 85,
+    "scan_score_minimum": 70,
     "knockouts_allowed": 0
   }
 }
@@ -148,8 +148,8 @@ RUBRIC SUMMARY:
 - Differentiators: {N} items
 
 PASS THRESHOLDS:
-- Overall score >= 70
-- Scan score >= 60
+- Overall score >= 85
+- Scan score >= 70
 - Zero knockouts
 
 This rubric is now SEALED and will not influence the resume building
@@ -195,11 +195,11 @@ Visual clarity:            80 * 0.15 = 12.00
 scan_score:                            76.25
 ```
 
-**Gate:** If scan_score < 60, the recruiter stops reading. Stage 2 does not run. Detail score defaults to 0.
+**Gate:** If scan_score < 70, the recruiter stops reading. Stage 2 does not run. Detail score defaults to 0.
 
 ### Stage 2: 14-Second Detail Review (40% of overall score)
 
-Only runs if scan_score >= 60. Simulates the recruiter's second pass.
+Only runs if scan_score >= 70. Simulates the recruiter's second pass.
 
 **What the recruiter reads:**
 1. All bullets for the top 2 most recent/relevant roles
@@ -236,18 +236,18 @@ def evaluate(scan_score, detail_score, knockouts_found):
 
     if knockouts_found > 0:
         return "REJECT", "knockout"
-    if scan_score < 60:
+    if scan_score < 70:
         return "REJECT", "weak_first_impression"
-    if overall < 70:
+    if overall < 85:
         return "REJECT", "insufficient_evidence"
     return "PASS", None
 ```
 
 Decision outcomes:
-- **PASS**: overall >= 70 AND scan_score >= 60 AND zero knockouts
+- **PASS**: overall >= 85 AND scan_score >= 70 AND zero knockouts
 - **REJECT (knockout)**: Any knockout criterion triggered
-- **REJECT (weak_first_impression)**: scan_score < 60, recruiter stopped reading
-- **REJECT (insufficient_evidence)**: Passed scan but overall < 70
+- **REJECT (weak_first_impression)**: scan_score < 70, recruiter stopped reading
+- **REJECT (insufficient_evidence)**: Passed scan but overall < 85
 
 ## Feedback Generation
 
@@ -363,7 +363,7 @@ Proceeding to Phase {N} with {count} feedback items.
 
 ### Iteration Limits
 
-- Maximum 3 total attempts: 1 initial generation + 2 revision cycles
+- Iterate until overall score >= 85% acceptance threshold (no hard maximum — continue until threshold is reached or no further improvement is possible after 3 consecutive attempts with score delta < 2 points)
 - Each iteration must show score improvement or the loop terminates early
 - Track full iteration history for transparency
 
@@ -403,26 +403,23 @@ Proceeding to Phase {N} with {count} feedback items.
 ### Max Iterations Reached Template
 
 ```
-"Maximum revision cycles reached (3 attempts).
+"Score improvement stalled (3 consecutive iterations with < 2 point gain, or score plateau reached).
 
 SCORE PROGRESSION:
-  Attempt 1: 49.0 (REJECT - weak first impression)
-  Attempt 2: 69.2 (REJECT - insufficient evidence)
-  Attempt 3: 71.8 (REJECT - insufficient evidence, but close)
+  Attempt 1: {score} ({decision})
+  ...
+  Attempt N: {score} ({decision} — plateau)
 
-BEST VERSION: Attempt 3 (score: 71.8)
+TARGET: 85 (not yet reached)
+BEST VERSION: Attempt {N} (score: {best_score})
 
 REMAINING ISSUES:
 1. {Issue}: {Why it persists}
-2. {Issue}: {Why it persists}
 
 RECOMMENDATIONS:
-1. ACCEPT CURRENT VERSION - Score is close to threshold (71.8 vs 70 target).
-   The resume is competitive but not exceptional for this specific role.
-2. DISCOVER MORE EXPERIENCES - Run Experience Discovery (Phase 2.5) to
-   surface content that could address remaining gaps.
-3. MANUAL REVIEW - Review the remaining issues and make targeted edits
-   outside this workflow.
+1. ACCEPT CURRENT VERSION - Best achievable score given available experience content.
+2. DISCOVER MORE EXPERIENCES - Run Experience Discovery (Phase 2.5) to surface content addressing remaining gaps.
+3. MANUAL REVIEW - Review remaining issues and make targeted edits.
 
 Which option?"
 ```
@@ -433,9 +430,9 @@ Which option?"
 "RECRUITER EVALUATION: PASS
 
 SCORES:
-  Scan score:    {scan}/100 (threshold: 60)
+  Scan score:    {scan}/100 (threshold: 70)
   Detail score:  {detail}/100
-  Overall score: {overall}/100 (threshold: 70)
+  Overall score: {overall}/100 (threshold: 85)
   Knockouts:     0
 
 STRENGTHS NOTED:
@@ -447,7 +444,7 @@ DIFFERENTIATOR NOTES:
 - {What makes this resume stand out from similar candidates}
 
 VERDICT: This resume would be forwarded to the hiring manager.
-{If score > 85: 'With a personal recommendation note.'}
+{If score > 92: 'With a personal recommendation note.'}
 
 Proceeding to Phase 5 (Library Update)."
 ```
@@ -455,12 +452,12 @@ Proceeding to Phase 5 (Library Update)."
 ## REJECT Output Template
 
 ```
-"RECRUITER EVALUATION: REJECT (Iteration {N}/3)
+"RECRUITER EVALUATION: REJECT (Iteration {N})
 
 SCORES:
-  Scan score:    {scan}/100 (threshold: 60) {FAIL if < 60}
-  Detail score:  {detail}/100 {N/A if scan < 60}
-  Overall score: {overall}/100 (threshold: 70) {FAIL if < 70}
+  Scan score:    {scan}/100 (threshold: 70) {FAIL if < 70}
+  Detail score:  {detail}/100 {N/A if scan < 70}
+  Overall score: {overall}/100 (threshold: 85) {FAIL if < 85}
   Knockouts:     {count} {FAIL if > 0}
 
 REJECTION REASON: {weak_first_impression | insufficient_evidence | knockout}
@@ -476,8 +473,7 @@ IMPROVEMENT PRIORITY:
 2. {Second highest impact fix - expected score gain: +X points}
 3. {Third fix if applicable}
 
-ROUTING: Feedback sent to Phase {2|3|3.5} ({Template|Assembly|Bullet Polish})
-Iterations remaining: {3 - N}"
+ROUTING: Feedback sent to Phase {2|3|3.5} ({Template|Assembly|Bullet Polish})"
 ```
 
 ## Edge Cases
@@ -507,10 +503,10 @@ scan priority that conflicts (recruiter expectations adjusted).
 ### Score Improves but Does Not Cross Threshold
 
 ```
-SCENARIO: Attempt 1: 52, Attempt 2: 64, Attempt 3: 68 (still < 70)
+SCENARIO: Attempt 1: 52, Attempt 2: 72, Attempt 3: 83 (still < 85)
 
 HANDLING: Apply max iterations reached template. Highlight the
-improvement trajectory and note that 68 is competitive even if below
+improvement trajectory and note that 83 is competitive even if below
 the automated threshold. Recommend accepting with the caveat that
 the resume is "good but not optimized" for this specific role.
 ```
@@ -539,11 +535,11 @@ not genuine failures).
 ### All Feedback Items Are MINOR
 
 ```
-SCENARIO: Rejection at overall score 67, but all feedback items are
+SCENARIO: Rejection at overall score 82, but all feedback items are
 severity MINOR. No single clear fix would cross the threshold.
 
 HANDLING:
-"Score is close to threshold (67 vs 70) and all feedback items are
+"Score is close to threshold (82 vs 85) and all feedback items are
 minor improvements. No single fix will cross the threshold.
 
 OPTIONS:
@@ -553,7 +549,7 @@ OPTIONS:
    improvement. Expected gain: +{estimate} points.
 
 RECOMMENDATION: Option 1 unless you have time for polish. The
-difference between 67 and 72 rarely changes recruiter behavior."
+difference between 82 and 85 rarely changes recruiter behavior."
 ```
 
 ## Multi-Job Integration
@@ -574,7 +570,7 @@ Batch: 3 jobs
 In EXPRESS mode, the evaluation loop runs without user intervention:
 - Phase -1 rubric generated automatically (no checkpoint)
 - Phase 6 evaluates, routes feedback, re-runs target phase
-- Loop continues until PASS or max iterations
+- Loop continues until PASS or score plateau (3 consecutive attempts with < 2 point gain)
 - User sees only the final result with iteration history
 
 ### Interactive Mode
@@ -591,9 +587,9 @@ After all jobs complete evaluation:
 
 ```
 BATCH EVALUATION SUMMARY:
-  Job 1 (Microsoft PM):  PASS (score: 82, 1 iteration)
-  Job 2 (Google TPM):    PASS (score: 76, 2 iterations)
-  Job 3 (AWS PM):        PASS (score: 71, 3 iterations)
+  Job 1 (Microsoft PM):  PASS (score: 91, 1 iteration)
+  Job 2 (Google TPM):    PASS (score: 87, 2 iterations)
+  Job 3 (AWS PM):        PASS (score: 85, 3 iterations)
 
 COMMON WEAKNESSES ACROSS JOBS:
 - {Pattern}: Appeared in {N} evaluations

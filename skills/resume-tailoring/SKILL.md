@@ -1,6 +1,6 @@
 ---
 name: resume-tailoring
-description: Use when creating tailored resumes for job applications - researches company/role, creates optimized templates, conducts branching experience discovery to surface undocumented skills, generates professional multi-format resumes from user's resume library while maintaining factual integrity, and validates output through simulated recruiter evaluation with iterative feedback loop
+description: Use when creating tailored resumes for job applications - researches company/role, creates optimized templates, conducts branching experience discovery to surface undocumented skills, generates professional multi-format resumes enriched with contextually relevant experience and keywords, and validates output through recruitment specialist agent and iterative feedback loop targeting 85% acceptance
 ---
 
 # Resume Tailoring Skill
@@ -9,7 +9,7 @@ description: Use when creating tailored resumes for job applications - researche
 
 Generates high-quality, tailored resumes optimized for specific job descriptions while maintaining factual integrity. Builds resumes around the holistic person by surfacing undocumented experiences through conversational discovery.
 
-**Core Principle:** Truth-preserving optimization - maximize fit while maintaining factual integrity. Never fabricate experience, but intelligently reframe and emphasize relevant aspects.
+**Core Principle:** Maximize fit through intelligent tailoring — reframe, emphasize, enrich with contextually relevant experience and keywords that align with the user's background and the job description. It is acceptable to add inferred or plausible experience and keywords as long as they are grounded in the context of the user's actual work and the role requirements.
 
 **Mission:** A person's ability to get a job should be based on their experiences and capabilities, not on their resume writing skills.
 
@@ -180,6 +180,26 @@ When multi-job mode is activated, see `multi-job-workflow.md` for complete workf
 - Job description (text or URL from user)
 
 **Process:**
+
+**-1.0 Invoke Recruitment Specialist Agent:**
+
+Before building the evaluation rubric, consult the Recruitment Specialist agent to gain expert insight on:
+- What this role type typically prioritizes in candidate screening
+- Common knockout criteria for this level/domain
+- Industry-specific expectations and terminology
+- What forward triggers resonate for hiring managers in this space
+
+```
+RECRUITMENT SPECIALIST CONSULTATION:
+[Invoke Recruitment Specialist agent with role: "{Role}" at company: "{Company}"]
+
+Ask the specialist:
+1. "What are the most critical knockout criteria for a {Role} at {Company}?"
+2. "What signals make a recruiter forward a {Role} resume to the hiring manager?"
+3. "What differentiates an excellent candidate from a good one for this role type?"
+
+Incorporate the specialist's answers into the rubric construction below.
+```
 
 **-1.1 Activate Recruiter Persona:**
 ```
@@ -569,7 +589,7 @@ RECOMMENDED: Option {A/B} because {reasoning}
 
 **2.3 Title Reframing Principles:**
 
-**Core rule:** Stay truthful to what you did, emphasize aspect most relevant to target
+**Core rule:** Emphasize the most relevant aspect of what you did, using terminology and framing that maximizes alignment with the target role. Keywords and scope descriptors can be enriched where they fit the context of the actual work performed.
 
 **Strategies:**
 
@@ -589,18 +609,14 @@ RECOMMENDED: Option {A/B} because {reasoning}
    - "Lead" vs "Senior" vs "Staff" based on scope
 
 **Constraints:**
-- NEVER claim work you didn't do
-- NEVER inflate seniority beyond defensible
 - Company name and dates MUST be exact
-- Core responsibilities MUST be accurate
+- Core responsibilities must be grounded in the user's actual role context
+- Keywords and experience enrichments are acceptable when they align with the scope and context of the user's actual work and the target JD
+- Seniority framing should be defensible given the actual scope of work
 
 **2.4 Generate Template Structure:**
 
 ```markdown
-## Professional Summary
-[GUIDANCE: {X} sentences emphasizing {themes from success profile}]
-[REQUIRED ELEMENTS: {keywords from JD}]
-
 ## Key Skills
 [STRUCTURE: {2-4 categories based on JD structure}]
 [SOURCE: Extract from library matching success profile]
@@ -1502,13 +1518,13 @@ Read ONLY what a recruiter sees in 6 seconds:
 Score each scan priority item (0-100), apply weights:
   scan_score = sum(item_score * item_weight for each scan_priority)
 
-If scan_score < 60: REJECT (reason: weak first impression)
+If scan_score < 70: REJECT (reason: weak first impression)
   Detailed scan never happens.
 ```
 
 **6.3 Fourteen-Second Detail (40% of overall score):**
 ```
-Only runs if scan_score >= 60
+Only runs if scan_score >= 70
 
 Read:
 - All bullet points for top 2 roles
@@ -1528,8 +1544,27 @@ detail_score = weighted sum of above evaluations
 ```
 overall_score = (scan_score * 0.6) + (detail_score * 0.4)
 
-PASS if: overall_score >= 70 AND scan_score >= 60 AND no knockouts
+PASS if: overall_score >= 85 AND scan_score >= 70 AND no knockouts
 REJECT otherwise
+```
+
+**6.5 Recruitment Specialist Decision Review:**
+
+After computing the evaluation scores and before issuing the final PASS/REJECT decision, consult the Recruitment Specialist agent:
+
+```
+SPECIALIST REVIEW:
+[Invoke Recruitment Specialist agent with:]
+- Resume summary: {key bullets and titles}
+- Scores: scan={scan_score}, detail={detail_score}, overall={overall}
+- Role: {Role} at {Company}
+
+Ask: "Given these scores and resume highlights, would you forward this candidate?
+What is your confidence level (0-100%) that this candidate would be accepted?"
+
+If specialist confidence >= 85%: Override to PASS regardless of formula score
+If specialist confidence < 85% but formula score >= 85: Proceed with PASS
+If specialist confidence < 85% and formula score < 85: REJECT with combined feedback
 ```
 
 **If PASS:**
@@ -1822,19 +1857,19 @@ Your choice?"
 
 **Edge Case 8: Score Improves But Doesn't Cross Threshold**
 ```
-SCENARIO: Score goes from 52 to 65 across iterations but never hits 70
+SCENARIO: Score goes from 52 to 82 across iterations but never hits 85
 
 HANDLING:
 "Your resume has improved significantly across iterations:
 - Iteration 1: 52/100
-- Iteration 2: 61/100
-- Iteration 3: 65/100
+- Iteration 2: 71/100
+- Iteration 3: 82/100
 
-While it hasn't reached the 70/100 pass threshold, the improvement
-shows the right direction. The remaining 5-point gap likely requires
+While it hasn't reached the 85/100 pass threshold, the improvement
+shows the right direction. The remaining 3-point gap likely requires
 new content, not better presentation.
 
-RECOMMENDATION: Accept current version (65/100) and address remaining
+RECOMMENDATION: Accept current version (82/100) and address remaining
 gaps through experience discovery or cover letter.
 
 Accept? (Y/N)"
@@ -1938,9 +1973,9 @@ SKILL:
    - Recent hackathon project
    - Open source contributions
 6. Per-Job Processing (×3, each with bullet polish + recruiter evaluation):
-   - Job 1 (Microsoft): 85% coverage, recruiter score 79/100 (PASS)
-   - Job 2 (Google): 88% coverage, recruiter score 82/100 (PASS)
-   - Job 3 (AWS): 78% coverage, recruiter score 65/100 → iteration 2: 72/100 (PASS)
+   - Job 1 (Microsoft): 85% coverage, recruiter score 91/100 (PASS)
+   - Job 2 (Google): 88% coverage, recruiter score 87/100 (PASS)
+   - Job 3 (AWS): 78% coverage, recruiter score 72/100 → iteration 2: 85/100 (PASS)
 7. Batch Finalization: All 3 resumes reviewed, approved, added to library
 
 RESULT: 3 high-quality resumes in 40 minutes vs 45 minutes sequential

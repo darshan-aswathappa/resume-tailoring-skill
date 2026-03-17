@@ -77,6 +77,7 @@ The Success Profile produced by research-prompts.md feeds the four scoring dimen
 |---|---|---|
 | Core Requirements (Must-Have) | Direct Match (40%) | Required keywords, domain, technology — high-weight direct match inputs |
 | Valued Capabilities (Nice-to-Have) | Transferable Skills (30%) | Same capability in different context — use for transferable scoring |
+| Narrative Themes | Adjacent Experience (20%) | Secondary exposure patterns from similar role holders — surface adjacent skills, supporting roles, and related tools |
 | Narrative Themes | Impact Alignment (10%) | What achievement types the role values — use to score impact alignment |
 | Cultural Fit Signals | Impact Alignment (10%) | Collaboration, scale, innovation signals — incorporate into impact scoring |
 | Terminology Map | All dimensions (reframing) | Use standard→preferred term mappings when reframing bullets |
@@ -172,7 +173,7 @@ fabricate per Phase 2.5 rules — do not prompt the user for discovery during co
 If Phase 2.5 Gap Resolution has not yet run for this gap:
   Route back to Phase 2.5 for targeted supplemental discovery:
   "This gap might be addressable through supplemental discovery.
-  Returning to Phase 2.5 to explore {gap_area} — no user prompt needed."
+  Routing automatically to Phase 2.5 — no routing confirmation needed before the supplemental interview begins."
 
 If Phase 2.5 has already run and this gap remains:
   Accept gap, move forward.

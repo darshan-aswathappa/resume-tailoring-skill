@@ -75,9 +75,9 @@ Use this skill when:
 8. [Phase 4] Generate output:
    - If source is `.md`: Generate full MD + DOCX + Report (+ optional PDF)
    - If source is `.tex`: Generate LaTeX changes patch only (courses, experience bullets, project bullets, skills)
-9. [Phase 6] Recruiter evaluation (6-second scan + 14-second detail review)
+9. [Phase 6] Recruiter evaluation (6-second scan + 14-second detail review) ← runs before Phase 5
 10. [Phase 6] If rejected: iterate with feedback (max 3 loops)
-11. [Phase 5] User review and optional library update
+11. [Phase 5] User review and optional library update (final approval step — Phase 5 runs after Phase 6 despite lower number)
 
 ## Implementation
 
@@ -1936,8 +1936,16 @@ Continue? (Y/N)"
 ```
 SCENARIO: Template slot requires experience user doesn't have
 
-HANDLING:
-Proceed automatically with fabrication (no user prompt):
+⚠️  MODE GATE — This fabrication path is YOLO MODE ONLY.
+    → truth mode: Do NOT fabricate. Flag the gap in the Generation Summary
+      Report and proceed with gap-aware assembly (see Phase 2.5). Surface
+      the gap to the user with a clear explanation of what is missing.
+
+OWNER: Phase 2.5 is the owner of fabrication decisions. This edge case
+       applies only to gaps that Phase 2.5 did not resolve. Do not invoke
+       this path if Phase 2.5 already handled the gap.
+
+HANDLING (yolo mode only — proceed automatically, no user prompt):
 
 Priority 1 — Fabricate a plausible Experience bullet anchored to the candidate's most
              relevant existing role. Use JD technology in a contextually realistic way.
@@ -2118,10 +2126,13 @@ SKILL:
 6. Assembly: 83% JD coverage, 75% direct matches
 7. Bullet Polish: 2 bullets improved (verb upgrades, added metrics)
 8. Generate: MD + DOCX + Report
-9. Recruiter Evaluation: PASS on first attempt (Score: 82/100, via Specialist Override — specialist confidence: 86%)
+9. Recruiter Evaluation: PASS on first attempt (Score: 91/100 — formula PASS, no override needed)
+   - Scan: 94/100 (keywords prominent, title match)
+   - Detail: 88/100 (strong metrics, internal credibility)
 10. User approves → Library updated with new resume + 6 discovered experiences
 
 RESULT: Highly competitive application leveraging internal experience
+        Strong candidate alignment produces formula PASS without override
 ```
 
 **Example 2: Career Transition (Different Domain)**
@@ -2161,9 +2172,12 @@ SKILL:
 6. Assembly: Frames gap as entrepreneurial experience
 7. Bullet Polish: 3 startup bullets enhanced with metrics and XYZ format
 8. Generate: Resume presenting gap as valuable experience
-9. Recruiter Evaluation: PASS (Score: 73/100, Specialist Override: specialist confidence 87%) - startup framing cleared knockout
+9. Recruiter Evaluation: PASS (Score: 86/100 — formula PASS, no override needed)
+   - Startup role framing cleared the gap knockout; fundraising + product metrics
+     gave sufficient achievement depth for direct formula threshold
 
 RESULT: Gap becomes strength showing initiative and diverse skills
+        Entrepreneurial framing produces formula PASS — override not required
 ```
 
 **Example 4: Multi-Job Batch (3 Similar Roles)**

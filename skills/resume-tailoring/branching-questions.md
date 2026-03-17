@@ -39,6 +39,7 @@ Current best match: {X}% confidence ('{best_match_text}')
   When skipping: note the gap in the job's coverage report for manual follow-up
 
 > This terminology is used consistently across branching-questions.md and multi-job-workflow.md gap analysis output.
+> Leverage classification operates at the discovery interview layer; Critical/Important/Job-specific (SKILL.md Phase 1) operates at the gap analysis layer — these are separate classifiers for different purposes.
 
 **Example:**
 

@@ -272,4 +272,38 @@ Signs the rubric and evaluation are working:
 
 ---
 
+## Invocation
+
+This agent is invoked at two points in the skill workflow:
+
+| Invocation Point | Phase | Purpose |
+|---|---|---|
+| Rubric Generation | Phase -1 | Build sealed evaluation rubric from JD before any resume work |
+| Candidate Evaluation | Phase 6 / 6.5 | Score generated resume; provide override confidence if formula score is 70-84 |
+
+**Input parameters (Phase 6 / 6.5 evaluation):**
+
+```
+jd_text:              string   — Full job description text
+resume_md:            string   — Generated resume in Markdown format
+scan_score:           number   — 6-second scan score (0-100), computed by caller
+detail_score:         number   — 14-second detail score (0-100), computed by caller
+knockouts_found:      number   — Count of knockout criteria triggered (0 = none)
+specialist_confidence: number | null — Set null on first call; agent returns confidence value
+```
+
+**Output (Phase 6.5 specialist confidence):**
+
+```
+specialist_confidence: number (0-100) — Agent's independent confidence that a real recruiter
+                                        would forward this resume. Used only when formula
+                                        score is 70-84 to determine specialist override.
+feedback:             string[]        — Ordered list of specific improvements if REJECT
+severity:             "CRITICAL" | "IMPORTANT" | "MINOR" per item
+```
+
+**Schema reference:** See `docs/schemas/batch-state-schema.md` → `JobState.recruiter_score` and `JobState.recruiter_iteration_count` for how evaluation results are persisted.
+
+---
+
 **Reference note**: Your screening methodology reflects real US recruiter behavior patterns, EEOC/DOL compliance requirements, and ATS platform mechanics. Always defer to current federal and state employment law when compliance questions arise.

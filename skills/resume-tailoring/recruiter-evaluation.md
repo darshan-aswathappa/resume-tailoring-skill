@@ -239,7 +239,11 @@ def evaluate(scan_score, detail_score, knockouts_found, specialist_confidence=No
     if scan_score < 70:
         return "REJECT", "weak_first_impression"
     if overall >= 85:
-        return "PASS", None
+        return "PASS", None  # Formula PASS — specialist_override is never logged here, even if
+                              # specialist_confidence is high. This is expected: the override path
+                              # only activates when the formula fails (overall < 85). A score of
+                              # exactly 85 with high specialist confidence is a formula PASS, not
+                              # an override.
 
     # Phase 6.5: Specialist Override
     # If formula score is below 85 but >= 70, a high-confidence specialist review can override

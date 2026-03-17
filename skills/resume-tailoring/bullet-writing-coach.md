@@ -163,7 +163,7 @@ REASONING: "{one sentence: what changed and why}"
 - **Strong**: Passes all constraints, has 2-of-3, starts with strong verb, reads clean
 - **Needs Work**: Minor issues (weak verb, missing one element, slightly long)
 - **Rewrite**: Banned verb, reads as job duty, no measurable element, fundamentally vague
-- **Flagged (recruiter)**: Bullet surfaced by Phase 6 recruiter feedback — treat as Rewrite if CRITICAL severity, Needs Work if IMPORTANT severity. These take priority over coach-assigned verdicts from the same iteration.
+- **Flagged (recruiter)**: Bullet surfaced by Phase 6 recruiter feedback — treat as Rewrite if CRITICAL severity, Needs Work if IMPORTANT severity, Strong (no change required) if MINOR severity (note in iteration log but do not re-polish). These take priority over coach-assigned verdicts from the same iteration.
 
 ## Writing Process
 

@@ -41,9 +41,12 @@ Tracks the state of multi-job resume tailoring sessions, supporting pause/resume
   "priority": "high|medium|low",
   "notes": "string",
   "status": "pending|in_progress|completed|failed",
-  "current_phase": "research|template|matching|generation|null",
+  "current_phase": "research|template|matching|bullet_polish|generation|recruiter_evaluation|null",
   "coverage": "number (0-100)",
   "files_generated": "boolean",
+  "recruiter_score": "number (0-100) | null",
+  "recruiter_iteration_count": "number",
+  "added_to_library": "boolean",
   "requirements": ["string"],
   "gaps": [GapItem]
 }

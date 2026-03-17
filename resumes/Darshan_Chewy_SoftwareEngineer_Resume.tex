@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,
+top=0.5in,
+bottom=0.5in,
+left=0.5in,
+right=0.5in]{geometry}
+
+\usepackage[normalem]{ulem}
+\usepackage{XCharter}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\raggedright
+\pagestyle{empty}
+
+\input{glyphtounicode}
+\pdfgentounicode=1
+
+\titleformat{\section}{\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule\vspace{-6.5pt}]
+
+\renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$}
+\setlist[itemize]{itemsep=-2pt, leftmargin=12pt, topsep=7pt}
+
+\begin{document}
+
+\centerline{\Huge Darshan Aswathappa}
+
+\vspace{5pt}
+
+\centerline{(510)-650-8661 | \href{mailto:aswathappa.darshan@outlook.com}{aswathappa.darshan@outlook.com} | \href{https://www.linkedin.com/in/darshanaswath/}{linkedin.com/in/darshanaswath} | \href{https://github.com/xanf-code}{github.com/xanf-code}}
+
+\vspace{-10pt}
+
+\section*{Education}
+\textbf{Northeastern University, Boston} -- MS in Computer Software Engineering | GPA: 3.7/4.0
+\hfill Expected Aug 2026 \\
+\vspace{3px}
+\textbf{Courses:} Data Structures \& Algorithms, Cloud Computing, Software Engineering, Advanced Web Architecture \\
+\vspace{3px}
+\textbf{Certifications:} AWS Solutions Architect - Professional, AWS Certified Developer - Associate
+\vspace{-6.5pt}
+
+\section*{Experience}
+
+\textbf{Software Engineer,} {Dassault Syst\`{e}mes} -- Boston, MA \hfill June 2025 -- Jan 2026 \\
+\vspace{-9pt}
+\begin{itemize}
+    \item Accelerated UI responsiveness by 25\% for a real-time virtual companion used by 3,000+ clients by architecting event-driven state management with React, Redux, WebSockets, and GraphQL
+    \item Reduced SQL response latency from 800ms to 200ms by implementing Redis caching and Hibernate ORM optimization for Java REST APIs, ensuring system scalability for 8 million indexed users
+    \item Architected a \uline{\href{https://www.3ds.com/newsroom/press-releases/dassault-systemes-unveils-new-way-working-industry-ai-powered-virtual-companions}{virtual companion}} for stakeholder recommendation and assignment across 8 million users using a supervisor--agent architecture and semantic search system built with Python and FastAPI
+    \item Standardized CI/CD quality gates across microservices by integrating JUnit, Jasmine/Karma, SonarQube, and Jenkins pipelines, sustaining 97\% test coverage across production services
+\end{itemize}
+
+\textbf{Software Engineer,} {London Stock Exchange Group} -- Bangalore, India \hfill July 2022 -- Aug 2024 \\
+\vspace{-9pt}
+\begin{itemize}
+    \item Boosted data retrieval by 90\% for 500+ analysts by architecting low-latency Kafka--Elasticsearch pipelines and automating containerized deployments via Docker, Kubernetes, and Terraform
+    \item Decomposed a legacy monolith into scalable Java Spring Boot microservices for a platform serving 400K+ users, achieving 200\% increase in system throughput through asynchronous event-driven processing
+    \item Architected fault-tolerant data persistence for a platform processing 1.4 billion daily records by implementing PostgreSQL layers and AWS WAF rules on REST API Gateway, sustaining 100\% uptime for 400K+ users
+    \item Resolved 20+ production incidents by developing a custom React/Node.js monitoring dashboard with Root Cause Analysis workflows, reducing recurring incidents by 75\% through standardized runbooks
+\end{itemize}
+
+\vspace{-18.5pt}
+
+\section*{Projects}
+\textbf{GoonedIn} \hfill \href{https://goonedin.vercel.app/}{goonedin.com} \\
+\vspace{-9pt}
+\begin{itemize}
+    \item Resolved fragmented job searching by building an automated aggregation engine with FastAPI and Playwright to pull listings from 10+ sources and apply AI-driven match scoring using DeepSeek
+    \item Architected a real-time dashboard providing instantaneous job updates by implementing a WebSocket communication layer with Next.js (JavaScript) and Zustand for event-driven state management
+    \item Optimized system efficiency by implementing a global PostgreSQL caching strategy and sequential queuing system, reducing API overhead and improving structured job analysis throughput
+\end{itemize}
+
+\textbf{Personal Finance Intelligence Platform} \hfill \href{https://spend-analyzer-coral.vercel.app/login/demo}{spendanalyzer.ai} \\
+\vspace{-9pt}
+\begin{itemize}
+    \item Resolved fragmented financial data interpretation by building scalable backend systems using Java Spring Boot and OpenAI to transform unstructured bank PDFs into structured spending analytics
+    \item Engineered fault-tolerant async processing by implementing a RabbitMQ message queue architecture to handle high-volume OCR and AI-driven data normalization tasks concurrently
+    \item Enabled actionable wealth insights and risk scoring for users by building a responsive full-stack dashboard with React, TypeScript, and PostgreSQL featuring interactive wealth flow modeling
+\end{itemize}
+
+\vspace{-18.5pt}
+
+\section*{Skills}
+\textbf{Languages:} Java, JavaScript, TypeScript, Python, SQL \\
+\textbf{Frontend:} React, Angular, Next.js, GraphQL, WebSockets, Redux \\
+\textbf{Backend:} Spring Boot, Node.js, Microservices, REST APIs, Kafka \\
+\textbf{Cloud \& Infra:} AWS, Docker, Kubernetes, Terraform, Jenkins CI/CD \\
+\textbf{Database:} PostgreSQL, Redis, Elasticsearch, MongoDB, Cassandra \\
+\textbf{Testing:} JUnit, Mockito, Jasmine/Karma, SonarQube
+
+\end{document}

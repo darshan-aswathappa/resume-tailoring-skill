@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}       % set main text size
+\usepackage[letterpaper,                % set paper size to letterpaper. change to a4paper for resumes outside of North America
+top=0.5in,                          % specify top page margin
+bottom=0.5in,                       % specify bottom page margin
+left=0.5in,                         % specify left page margin
+right=0.5in]{geometry}              % specify right page margin
+                       
+\usepackage{XCharter}               % set font. comment this line out if you want to use the default LaTeX font Computer Modern
+\usepackage[T1]{fontenc}            % output encoding
+\usepackage[utf8]{inputenc}         % input encoding
+\usepackage{enumitem}               % enable lists for bullet points: itemize and \item
+\usepackage[hidelinks]{hyperref}    % format hyperlinks
+\usepackage{titlesec}               % enable section title customization
+\raggedright                        % disable text justification
+\pagestyle{empty}                   % disable page numbering
+
+% ensure PDF output will be all-Unicode and machine-readable
+\input{glyphtounicode}
+\pdfgentounicode=1
+
+% format section headings: bolding, size, white space above and below
+\titleformat{\section}{\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule\vspace{-6.5pt}]
+
+% format bullet points: size, white space above and below, white space between bullets
+\renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$}
+\setlist[itemize]{itemsep=-2pt, leftmargin=12pt, topsep=7pt} %%% Test various topsep values to fix vertical spacing errors
+
+% resume starts here
+\begin{document}
+
+% name
+\centerline{\Huge Darshan Aswathappa}
+
+\vspace{5pt}
+
+% contact information
+\centerline{(510)-650-8661 | \href{mailto:aswathappa.darshan@outlook.com}{aswathappa.darshan@outlook.com} | \href{https://www.linkedin.com/in/darshanaswath/}{linkedin.com/in/darshanaswath} | \href{https://github.com/xanf-code}{github.com/xanf-code}}
+
+\vspace{-10pt}
+
+% education section
+\section*{Education}
+\textbf{Northeastern University, Boston} -- MS in Computer Software Engineering | GPA: 3.7/4.0 
+\hfill Expected Aug 2026 \\
+\vspace{3px}
+\textbf{Courses:} Data Structures \&\ Algorithms, Cloud Computing, Software Engineering, Advanced Web Architecture \\
+\vspace{3px}
+\textbf{Certifications:} AWS Solutions Architect - Professional, AWS Certified Developer - Associate
+\vspace{-6.5pt}
+
+% experience section
+\section*{Experience}
+
+\textbf{Software Engineer Co-op,} {Dassault Systemes} -- Boston, MA \hfill June 2025 -- Jan 2026 \\
+\vspace{-9pt}
+\begin{itemize}
+  \item Scaled stakeholder assignment for 8 million indexed users through the implementation of a supervisor–agent system and semantic search integration within an Enterprise Java and Spring Framework environment
+  \item Reduced SQL latency by 70\% under high-concurrency workloads by implementing a distributed Redis caching layer and optimizing data persistence with Hibernate batch fetching and JPA within Java REST APIs
+  \item Automated testing protocols to maintain 97\% test coverage across production microservices by implementing JUnit and Jasmine/Karma suites integrated with SonarQube quality gates within Jenkins CI/CD pipelines
+  \item Developed a real-time messaging modules and decreased UI update latency by 25\% by implementing Angular and RxJS architectures using event-driven state management for responsive updates
+\end{itemize}
+
+\textbf{Software Engineer,} {London Stock Exchange Group} -- Bangalore, India \hfill July 2022 -- Aug 2024 \\
+\vspace{-9pt}
+\begin{itemize}
+  \item Decomposed a legacy monolith into scalable Java Spring Boot microservices, resulting in 200\% increase in system throughput, by implementing asynchronous processing and Maven
+  \item Maintained continuous availability for a transaction screening platform processing 1.4 billion daily records by developing Spring Boot services with PostgreSQL and JSON-based data structures on AWS
+  \item Improved data retrieval performance by 90\% for 500+ analysts by architecting a Kafka–Elasticsearch pipeline and automating containerized deployment using Docker, Kubernetes, and Terraform
+  \item Resolved a critical production deadlock impacting a financial network of 40,000 institutions by implementing Mockito-based unit testing and developing Angular (TypeScript) monitoring interfaces
+\end{itemize}
+
+\vspace{-18.5pt}
+
+% projects section
+\section*{Projects}
+\textbf{GoonedIn} \hfill \href{https://goonedin.vercel.app/}{goonedin.com} \\
+\vspace{-9pt}
+\begin{itemize}
+  \item Resolved the issue of fragmented job searching by developing an automated aggregation engine using FastAPI and Playwright to pull listings from multiple sources and apply AI-driven match scoring with DeepSeek
+  \item Optimized system efficiency and reduced API overhead by implementing a global PostgreSQL caching strategy and a sequential queuing system for structured job analysis
+  \item Architected a real-time dashboard to provide instantaneous job updates for users by implementing a WebSocket communication layer with Next.js and Zustand for responsive state management
+\end{itemize}
+
+\textbf{NEU Personalized AI Academic Advisor} \hfill \href{https://github.com/darshan-aswathappa/web-dev-6150-final}{GitHub} \\
+\vspace{-9pt}
+\begin{itemize}
+  \item Simplified academic planning for students by building a vector similarity search engine and Angular UI to extract information from 500+ unstructured academic PDFs and HTML documents
+  \item Increased recommendation accuracy by achieving a 95\% relevance score through the implementation of a semantic matching algorithm using Python, LangChain, and Pinecone
+\end{itemize}
+
+% alternate formatting for projects section
+% \section*{Projects}
+% \begin{itemize}
+%   \item \textbf{QuantSoftware Toolkit:} Open source Python library for data analysis and machine learning for finance
+%   \item \textbf{GitHub Visualization:} Data visualization of Git Log data using D3 to analyze project trends over time
+%   \item \textbf{Recommendation System:} Music and movie recommender systems using collaborative filtering on public datasets
+%   \item \textbf{Mac Setup:} Book that gives step by step instructions on setting up developer environment on Mac OS
+% \end{itemize}
+
+\vspace{-18.5pt}
+
+% skills section
+\section*{Skills}
+\textbf{Languages:} Java, Python, TypeScript, SQL \\
+\textbf{Backend:} Spring Boot, Spring Framework, Hibernate, JPA, REST APIs \\
+\textbf{Data:} PostgreSQL, Redis, Kafka, MongoDB Atlas, Cassandra \\
+\textbf{Infrastructure \&\ Cloud:} AWS, Docker, Kubernetes (EKS), Terraform, Jenkins CI/CD \\
+\textbf{Testing \&\ Quality Assurance:} JUnit, Mockito, Jasmine/Karma, SonarQube
+\end{document}

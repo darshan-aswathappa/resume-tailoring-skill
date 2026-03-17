@@ -17,7 +17,7 @@ Generates high-quality, tailored resumes optimized for specific job descriptions
 
 Use this skill when:
 - User provides a job description and wants a tailored resume
-- User has multiple existing resumes in markdown format
+- User has multiple existing resumes in markdown or LaTeX (.tex) format
 - User wants to optimize their application for a specific role/company
 - User needs help surfacing and articulating undocumented experiences
 
@@ -31,16 +31,19 @@ Use this skill when:
 **Required from user:**
 1. Job description (text or URL)
 2. Resume library location (defaults to `resumes/` in current directory)
+3. Resume source format: markdown (`.md`) or LaTeX (`.tex`)
 
 **Workflow:**
 1. Recruiter intake - build evaluation rubric from JD (sealed)
-2. Build library from existing resumes
+2. Build library from existing resumes (supports `.md` and `.tex`)
 3. Research company/role
 4. Create template (with user checkpoint)
 5. Optional: Branching experience discovery
 6. Match content with confidence scoring
 7. Polish bullets using XYZ format (bullet-writing coach)
-8. Generate MD + DOCX + Report (+ optional PDF)
+8. Generate output:
+   - If source is `.md`: Generate full MD + DOCX + Report (+ optional PDF)
+   - If source is `.tex`: Generate LaTeX changes patch only (courses, experience bullets, project bullets, skills)
 9. Recruiter evaluation (6-second scan + 14-second detail review)
 10. If rejected: iterate with feedback (max 3 loops)
 11. User review and optional library update
@@ -253,22 +256,101 @@ Wait for user confirmation before proceeding.
    Validate directory exists
    ```
 
-2. **Scan for markdown files:**
+2. **Detect source format and scan for resume files:**
+
+   **Auto-detect from initial message first:**
    ```
-   Use Glob tool: pattern="*.md" path={resume_directory}
-   Count files found
-   Announce: "Building resume library... found {N} resumes"
+   If the user's first message contained a file path ending in .tex
+   (e.g., "here is my resume: resume.tex" or "use resume/darshan.tex"):
+     source_format = "latex"
+     Announce: "I see you provided a LaTeX file. I'll build your library
+     from that .tex file and output a LaTeX patch at the end. ✓"
+     Skip the Glob scan and load that specific file.
+   Else:
+     Proceed with Glob scan below.
    ```
+
+   **Glob-based detection (when no path in initial message):**
+   ```
+   Step A — Scan for .tex files:
+     Use Glob tool: pattern="*.tex" path={resume_directory}
+
+   If .tex files found (N > 0):
+     Say exactly:
+       "I found {N} LaTeX file(s) in your resume directory:
+        {list filenames}
+        Should I use LaTeX mode? In LaTeX mode, I will:
+        - Read your .tex source to build the content library
+        - Output ONLY the changed text as ready-to-paste LaTeX snippets
+          (courses line, experience bullets, project bullets, skills block)
+        - Leave all formatting, fonts, and section ordering untouched
+
+        Use LaTeX mode? (Y/N — default Y if all files are .tex)"
+
+   If user says Y (or all files are .tex and user does not object):
+     source_format = "latex"
+     Announce: "Building resume library from {N} LaTeX file(s)..."
+
+   If user says N, or no .tex files found:
+     Step B — Scan for .md files:
+       Use Glob tool: pattern="*.md" path={resume_directory}
+       source_format = "markdown"
+       Announce: "Building resume library from {N} markdown resume(s)..."
+
+   If BOTH .tex AND .md files exist and user has not yet confirmed:
+     Say exactly:
+       "Your resume directory contains both .tex and .md files.
+        Which format is your primary source?
+        1. LaTeX (.tex) — I output a patch with only the changed sections
+        2. Markdown (.md) — I output a full new resume (MD + DOCX)
+        (Do not mix formats in the same session.)"
+     Wait for answer before proceeding.
+
+   If .tex Glob returns 0 AND user's message mentions a .tex file:
+     Say: "I didn't find any .tex files in {resume_directory}.
+     Please confirm the path or paste the file contents directly."
+     Wait for user response.
+   ```
+
+   Set library.source_format = source_format
+   This value controls Phase 4 output routing.
 
 3. **Parse each resume:**
    For each resume file:
    - Use Read tool to load content
-   - Extract sections: roles, bullets, skills, education
+   - Detect format from file extension
+   - Extract sections using the appropriate parser (see parsing rules below)
    - Identify patterns: bullet structure, length, formatting
+
+   **Parsing rules for `.md` files (unchanged):**
+   - Sections are identified by `#` or `##` headings
+   - Bullets are lines starting with `-` or `•`
+   - Education, Experience, Projects, Skills identified by heading text
+   - Courses line identified by text starting with `**Courses:**` or `Courses:`
+
+   **Parsing rules for `.tex` files:**
+   - Sections are identified by `\section*{...}` or `\section{...}` commands
+   - Bullets are `\item` lines inside `\begin{itemize}` or `\begin{enumerate}` blocks
+   - Treat `\begin{itemize}` and `\begin{enumerate}` identically for content extraction; record which command was used in the source so Phase 4 can reproduce it exactly
+   - The Education section is the block following `\section*{Education}` or `\section{Education}`
+   - The Courses line is any line inside the Education block that begins with one of these patterns: `\textbf{Courses:}`, `\textbf{Relevant Courses:}`, `\textbf{Selected Courses:}`, `\textbf{Key Courses:}`, or `Courses:` (un-bolded). If none of these patterns is found, set `courses_line` to null and skip the Courses section in Phase 4.0 output rather than guessing.
+   - Experience roles are identified by `\textbf{Job Title,}` or `\textbf{Job Title}` lines followed by a company name and date range (usually before the first `\begin{itemize}` in the Experience section)
+   - If a single role contains more than one `\begin{itemize}` (or `\begin{enumerate}`) block, treat all of them together as that role's bullet list. In Phase 4.0 output, emit a single merged `\begin{itemize}...\end{itemize}` block replacing all of them, and add a note: "(Source had multiple list blocks for {Role}; merged into one in this patch.)"
+   - Project names are identified by `\textbf{Project Name}` lines (optionally followed by `\href{...}{...}`) before the first `\begin{itemize}` in the Projects section
+   - The Skills section is the block following `\section*{Skills}` or `\section{Skills}`, containing `\textbf{Category:} value \\` lines
+   - Preserve role and project ordering exactly as they appear in the source file; NEVER reorder roles, projects, or skill categories
+   - LaTeX escape sequences in plain text (e.g., `\&` for `&`, `\%` for `%`) should be stored in the database in their escaped form so they can be reproduced faithfully in output
+   - To populate `section_order`, scan the source file top-to-bottom and record the normalized name (`education`, `experience`, `projects`, `skills`) of each `\section*{...}` or `\section{...}` command in the order it appears. If a section has an unexpected name (e.g., `\section*{Work History}`), map it to the closest normalized name and note the mapping. This array is read by Phase 4.0 to enforce the "Do NOT change section ordering" constraint.
+   - **Section command variants:** Treat `\section`, `\section*`, `\subsection`, `\subsection*`, and `\noindent\textbf{...}` followed by `\\` as equivalent section delimiters when parsing. Record the exact command used in `user_preferences` so Phase 4.0 never outputs a different command in the patch.
+
+   **Handling unknown LaTeX commands:**
+   - If a line contains an unrecognized command (e.g., `\vspace`, `\hfill`, `\noindent`), preserve it verbatim in the surrounding context but do not attempt to parse its content as resume data
+   - If the entire section uses a custom environment not listed above (e.g., `\begin{cvitems}`), note it as "non-standard environment: {name}" and ask the user how to handle it before continuing
 
 4. **Build experience database structure:**
    ```json
    {
+     "source_format": "latex",
      "roles": [
        {
          "role_id": "company_title_year",
@@ -276,53 +358,93 @@ Wait for user confirmation before proceeding.
          "title": "Job Title",
          "dates": "YYYY-YYYY",
          "description": "Role summary",
+         "list_env": "itemize",
          "bullets": [
            {
-             "text": "Full bullet text",
+             "text": "Full bullet text (LaTeX-escaped if source is .tex)",
              "themes": ["leadership", "technical"],
              "metrics": ["17x improvement", "$3M revenue"],
              "keywords": ["cross-functional", "program"],
-             "source_resumes": ["resume1.md"]
+             "source_resumes": ["resume.tex"]
            }
          ]
        }
      ],
+     "projects": [
+       {
+         "project_id": "project_name",
+         "name": "Project Name",
+         "url": "https://...",
+         "list_env": "itemize",
+         "bullets": [...]
+       }
+     ],
      "skills": {
-       "technical": ["Python", "Kusto", "AI/ML"],
-       "product": ["Roadmap", "Strategy"],
-       "leadership": ["Stakeholder mgmt"]
+       "Language": ["Java", "Python", "TypeScript"],
+       "Framework": ["Spring Boot", "React"]
      },
-     "education": [...],
+     "education": {
+       "courses_line": "\\textbf{Courses:} Data Structures \\& Algorithms, Cloud Computing \\\\",
+       "institutions": [...]
+     },
      "user_preferences": {
        "typical_length": "1-page|2-page",
-       "section_order": ["summary", "experience", "education"],
-       "bullet_style": "pattern"
+       "section_order": ["education", "experience", "projects", "skills"],
+       "bullet_style": "\\item"
      }
    }
    ```
 
+   Note: `list_env` records whether the source used `itemize` or `enumerate` so Phase 4 can reproduce the exact environment. `section_order` records the order sections appear in the source file so Phase 4 never reorders them.
+
 5. **Tag content automatically:**
    - Themes: Scan for keywords (leadership, technical, analytics, etc.)
-   - Metrics: Extract numbers, percentages, dollar amounts
+   - Metrics: Extract numbers, percentages, dollar amounts (strip LaTeX markup first when scanning, e.g., treat `70\%` as `70%`)
    - Keywords: Frequent technical terms, action verbs
 
-**Output:** In-memory database ready for matching
+**Output:** In-memory database ready for matching, with `source_format` flag set
 
 **Code pattern:**
 ```python
 # Pseudo-code for reference
 library = {
+    "source_format": "markdown",  # or "latex"
     "roles": [],
+    "projects": [],
     "skills": {},
-    "education": []
+    "education": {}
 }
 
-for resume_file in glob("resumes/*.md"):
+tex_files = glob("resumes/*.tex")
+md_files  = glob("resumes/*.md")
+
+if tex_files and user_confirmed_latex_mode:
+    library["source_format"] = "latex"
+    files = tex_files
+else:
+    library["source_format"] = "markdown"
+    files = md_files
+
+for resume_file in files:
     content = read(resume_file)
-    roles = extract_roles(content)
+    if library["source_format"] == "latex":
+        roles    = extract_roles_from_tex(content)
+        projects = extract_projects_from_tex(content)
+        skills   = extract_skills_from_tex(content)
+        education = extract_education_from_tex(content)
+    else:
+        roles    = extract_roles(content)
+        projects = extract_projects(content)
+        skills   = extract_skills(content)
+        education = extract_education(content)
+
     for role in roles:
         role["bullets"] = tag_bullets(role["bullets"])
         library["roles"].append(role)
+
+    library["projects"].extend(projects)
+    library["skills"].update(skills)
+    library["education"] = education
 
 return library
 ```
@@ -830,6 +952,8 @@ When recruiter feedback targets bullet quality:
 - Re-run writing process with feedback as additional input
 - Log all changes for transparency
 
+**LaTeX mode constraint (Phase 3.5):** When `source_format == "latex"`, the order of roles in the polished content mapping MUST match the order recorded in `library.user_preferences.section_order` and the role order within the Experience block as parsed in Phase 0. Do not reorder roles for relevance — bullet count per role may change, but role sequence may not. The same constraint applies to projects.
+
 **Checkpoint (iteration 1 only):**
 ```
 "I've polished {N} bullets for quality and impact:
@@ -864,8 +988,139 @@ feedback and proceed directly to Phase 4.
 - Polished content mapping (from Phase 3.5)
 - User's formatting preferences (from library analysis)
 - Target role information (from Phase 1)
+- `library.source_format` flag (set in Phase 0)
 
 **Process:**
+
+**Route based on source format:**
+
+```
+IF library.source_format == "latex":
+    Run 4.0 (LaTeX Patch Output) ONLY.
+    Skip 4.1, 4.2, 4.3.
+    Still run 4.4 (Generation Summary Report).
+
+IF library.source_format == "markdown":
+    Skip 4.0.
+    Run 4.1 (Markdown), 4.2 (DOCX), optionally 4.3 (PDF), and 4.4.
+```
+
+---
+
+**4.0 LaTeX Patch Output (runs ONLY when source_format == "latex")**
+
+**Goal:** Produce only the changed text, formatted as ready-to-paste LaTeX snippets. Do NOT output a full resume document. Do NOT change section ordering, fonts, spacing commands, or any structural LaTeX outside the four targeted content areas.
+
+**What is changed:**
+1. The `\textbf{Courses:}` line inside the Education section
+2. The `\begin{itemize}...\end{itemize}` (or `\begin{enumerate}...\end{enumerate}`) block for each Experience role
+3. The `\begin{itemize}...\end{itemize}` (or `\begin{enumerate}...\end{enumerate}`) block for each Project
+4. The Skills section content (all `\textbf{Category:} value \\` lines as a group)
+
+**What is NOT changed:**
+- Section headings (`\section*{...}`)
+- Role header lines (company name, job title, dates, location)
+- Project header lines (project name, URL)
+- Institution lines in Education
+- Certifications lines in Education
+- Contact information
+- Any `\vspace`, `\hrule`, `\hfill`, font size declarations, or other layout commands
+- The ordering of roles within Experience (preserve source order exactly)
+- The ordering of projects within Projects (preserve source order exactly)
+- The ordering of skill categories (preserve source order exactly)
+- Do NOT merge adjacent `\begin{itemize}` blocks from two separate roles into one
+- Do NOT split a single role's `\begin{itemize}` block into multiple blocks
+- Do NOT add, remove, or relocate any `\\` line-break command outside the content areas being changed (courses line, skill category lines)
+- Do NOT introduce new `\textbf{}`, `\textit{}`, or `\href{}` commands unless the original bullet already contained that command
+
+**Pre-output ordering check:** Before printing the patch, verify:
+1. Roles appear in the patch in the same sequence as they appear in the source `.tex` file (check against `section_order` and the parsed role order).
+2. Projects appear in source order.
+3. Skill categories appear in source order and no categories have been added or removed unless the user explicitly requested it.
+If any ordering discrepancy is detected, silently correct it before output. Never emit a patch with reordered sections.
+
+**Output format — the complete response must follow this exact structure:**
+
+**CRITICAL: The square-bracket placeholders below are instructions to YOU (the LLM). Do NOT print any line that starts with `[` and ends with `]` literally in your output — those are meta-instructions. Only the non-bracketed lines (headers, LaTeX commands, section dividers) appear in the final patch. Separator lines are always exactly 45 dashes, regardless of header length.**
+
+```
+CHANGES TO APPLY TO YOUR LATEX FILE
+=====================================
+Target role: [Job Title] at [Company]
+
+COURSES LINE
+---------------------------------------------
+Replace the \textbf{Courses:} line in your Education section with:
+
+\textbf{Courses:} [Course 1], [Course 2], [Course 3], [Course 4] \\
+
+(Keep every other line in the Education block exactly as-is.)
+
+EXPERIENCE BULLETS — [Company Name] | [Job Title]
+---------------------------------------------
+Replace the \begin{itemize}...\end{itemize} block for this role with:
+
+\begin{itemize}
+  \item [Polished bullet 1]
+  \item [Polished bullet 2]
+  \item [Polished bullet 3]
+\end{itemize}
+
+[Output one EXPERIENCE BULLETS block per role, in source-file order. Do not print this line.]
+
+PROJECT BULLETS — [Project Name]
+---------------------------------------------
+Replace the \begin{itemize}...\end{itemize} block for this project with:
+
+\begin{itemize}
+  \item [Polished bullet 1]
+  \item [Polished bullet 2]
+\end{itemize}
+
+[Output one PROJECT BULLETS block per project, in source-file order. Do not print this line.]
+
+SKILLS SECTION
+---------------------------------------------
+Replace the full skills content block (all lines between \section*{Skills}
+and the next \section or end of document) with:
+
+\textbf{[Category 1]:} [val1], [val2], [val3] \\
+\textbf{[Category 2]:} [val1], [val2] \\
+[One line per category. Preserve exact category names and order. Do not print this line.]
+
+=====================================
+END OF CHANGES
+```
+
+**Formatting rules for the LaTeX patch:**
+- Every bullet line is `  \item {text}` (two-space indent, no trailing period)
+- Every bullet text follows the XYZ format enforced in Phase 3.5; special characters are LaTeX-escaped: `&` becomes `\&`, `%` becomes `\%`, `#` becomes `\#`, `_` becomes `\_` when outside math mode
+- Use the same list environment (`itemize` or `enumerate`) that appeared in the source for that role or project; do not change it
+- The Courses line ends with ` \\` (space + two backslashes), matching the line-break convention in the source
+- Each skill category line ends with ` \\` matching the source convention
+- Do not add or remove skill categories; only update the values within existing categories unless the user explicitly asked for a category to be added
+- If a role or project had no items selected (all bullets were gaps), omit that section from the patch and add a note: `(No changes for {Role/Project} — no improvements identified)`
+- If the source used `\begin{enumerate}` for a role, use `\begin{enumerate}` and `\end{enumerate}` in the patch for that role (not `\begin{itemize}`); all other formatting rules (indent, no period, XYZ format) apply identically
+- Emit exactly the number of polished bullets selected and approved in Phase 3/3.5 for that role or project. Do not pad to match the original count and do not truncate. If fewer bullets are produced than the original role had, add a LaTeX comment on the line before `\begin{itemize}`: `% Source had {N} bullets; {M} selected after optimization`
+
+**Edge case handling in LaTeX patch mode:**
+- **Nested itemize:** If the source has nested `\begin{itemize}` blocks inside a role, only replace the outermost block. Note explicitly: "The source for {Role} contains nested lists. Only the outer \begin{itemize} is replaced. Review inner bullets manually."
+- **\item with optional label `\item[label]`:** Preserve the label syntax on any unchanged items; use plain `\item` for all new bullets
+- **Inline formatting in bullets:** When rewriting bullets, preserve inline commands the user already uses (e.g., `\href{url}{text}`, `\textbf{}`, `\textit{}`). Only add `\href` links that were in the original bullet; do not introduce new URLs
+- **Long bullets:** If a polished bullet exceeds approximately 150 characters of plain text, add a `% long bullet` comment on the same line as a visual warning, e.g., `  \item {long bullet text} % long bullet`
+- **Multiple `.tex` files in library:** If the library was built from more than one `.tex` file, produce a separate patch block for each file, labeled with the filename at the top of its section
+
+**Additional edge cases specific to LaTeX mode:**
+- **Courses line with inline neighbors:** If the `\textbf{Courses:}` token appears mid-line (sharing the line with other `\textbf{...}` content like GPA), the replacement must emit only the `\textbf{Courses:} {list} \\` portion and preserve all other tokens on that line unchanged. State explicitly in the patch: "Replace only the `\textbf{Courses:} ...` portion of this line; keep all other tokens on the same line."
+- **Non-line Skills layout:** If the Skills section body uses `\begin{tabular}`, `\begin{multicols}`, or any environment other than bare `\textbf{Cat:} value \\` lines, do not attempt to patch it. Instead output: "(Skills section uses a non-standard layout environment [{name}]. Manual editing required — see recommended skill values below:)" then list the recommended skills in plain text, one category per line.
+- **Role with no bullet list:** If a role in the Experience section has no `\begin{itemize}` or `\begin{enumerate}` block (e.g., the user described the role in prose sentences), output a note: "(Role {Company/Title} has no itemize block in source. To add bullets, insert the following block after the role header line:)" then emit the `\begin{itemize}...\end{itemize}` block as normal.
+- **Courses line is null:** If `courses_line` was set to null during Phase 0 parsing (no recognized courses pattern found), omit the COURSES LINE section from the patch entirely. Do not guess or fabricate a courses line.
+
+**Output files:**
+- Print the full patch inline in the conversation (no file write required)
+- Optionally save to `{Name}_{Company}_{Role}_LaTeX_Changes.txt` if user requests a file
+
+---
 
 **4.1 Markdown Generation:**
 
@@ -1025,6 +1280,42 @@ Professional appearance for direct submission
 **Output:** `{Name}_{Company}_{Role}_Resume_Report.md`
 
 **Present to user:**
+
+If source_format == "latex":
+```
+"Your LaTeX resume changes are ready!
+
+HOW TO APPLY:
+Copy each section above and paste it into your .tex file,
+replacing the indicated block. Compile with pdflatex or your
+usual LaTeX build command to verify formatting.
+
+WHAT WAS CHANGED:
+- Courses line (Education section)
+- Experience bullets: {list of roles updated}
+- Project bullets: {list of projects updated}
+- Skills section content
+
+WHAT WAS NOT CHANGED:
+- Section ordering, headings, fonts, spacing
+- Role/project header lines (company, title, dates)
+- Education institution lines and certifications
+- Any layout commands (\vspace, \hfill, etc.)
+
+QUALITY METRICS:
+- JD Coverage: {percentage}%
+- Direct Matches: {percentage}%
+- Newly Discovered: {N} experiences
+
+{If user requested file: Changes saved to {Name}_{Company}_{Role}_LaTeX_Changes.txt}
+
+Review the changes and let me know:
+1. Apply changes (you paste them into your .tex file)
+2. Need revisions to specific bullets or sections
+3. Save changes file for reference"
+```
+
+If source_format == "markdown":
 ```
 "Your tailored resume has been generated!
 
@@ -1183,7 +1474,9 @@ Not added to library - you can manually move later if desired."
 **Why this phase exists:** The resume-building process (Phases 0-4) optimizes for JD coverage and content quality. But real recruiter screening is a different test: does the resume survive a 6-20 second scan? This phase provides that external perspective.
 
 **Inputs:**
-- Generated resume (markdown, from Phase 4)
+- Generated resume content (from Phase 4):
+  - If source_format == "markdown": the generated markdown resume text
+  - If source_format == "latex": reconstruct the full resume mentally by merging the LaTeX patch (from 4.0) into the original source `.tex` content; evaluate the merged result as if it were a complete resume. Do not evaluate the patch diff in isolation.
 - Sealed evaluation rubric (from Phase -1)
 - Iteration count (1-based)
 
@@ -1339,6 +1632,13 @@ def determine_restart_phase(feedback_items):
 - Phase 2 re-runs ONLY on structural feedback (rare)
 - Each iteration should be progressively lighter (fewer bullets to fix)
 - Recruiter feedback carries forward as additional input to the routed phase
+
+**LaTeX mode iteration behavior:**
+- When source_format == "latex", each iteration produces a new complete LaTeX patch (4.0 output) covering only the sections that changed in this iteration
+- The patch header must note: "Iteration {N} — replaces iteration {N-1} patch for the following sections: {list}"
+- Sections not touched in this iteration are omitted from the new patch (the user retains the previous patch for those sections)
+- NEVER emit a full markdown or DOCX resume in LaTeX mode, even after multiple iterations
+- If structural feedback (Phase 2) is routed in LaTeX mode, it affects only role ordering within Experience or project ordering within Projects; it does NOT change section-level ordering (Education/Experience/Projects/Skills order must stay as in the source)
 
 **After Max Iterations (iteration 3 still REJECT):**
 ```

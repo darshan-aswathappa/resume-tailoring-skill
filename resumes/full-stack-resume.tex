@@ -1,0 +1,111 @@
+\documentclass[11pt]{article}       % set main text size
+\usepackage[letterpaper,                % set paper size to letterpaper. change to a4paper for resumes outside of North America
+top=0.5in,                          % specify top page margin
+bottom=0.5in,                       % specify bottom page margin
+left=0.5in,                         % specify left page margin
+right=0.5in]{geometry}              % specify right page margin
+
+\usepackage[normalem]{ulem}
+\usepackage{XCharter}               % set font. comment this line out if you want to use the default LaTeX font Computer Modern
+\usepackage[T1]{fontenc}            % output encoding
+\usepackage[utf8]{inputenc}         % input encoding
+\usepackage{enumitem}               % enable lists for bullet points: itemize and \item
+\usepackage[hidelinks]{hyperref}    % format hyperlinks
+\usepackage{titlesec}               % enable section title customization
+\raggedright                        % disable text justification
+\pagestyle{empty}                   % disable page numbering
+
+% ensure PDF output will be all-Unicode and machine-readable
+\input{glyphtounicode}
+\pdfgentounicode=1
+
+% format section headings: bolding, size, white space above and below
+\titleformat{\section}{\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule\vspace{-6.5pt}]
+
+% format bullet points: size, white space above and below, white space between bullets
+\renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$}
+\setlist[itemize]{itemsep=-2pt, leftmargin=12pt, topsep=7pt} %%% Test various topsep values to fix vertical spacing errors
+
+% resume starts here
+\begin{document}
+
+% name
+\centerline{\Huge Darshan Aswathappa}
+
+\vspace{5pt}
+
+% contact information
+\centerline{(510)-650-8661 | \href{mailto:aswathappa.darshan@outlook.com}{aswathappa.darshan@outlook.com} | \href{https://www.linkedin.com/in/darshanaswath/}{linkedin.com/in/darshanaswath} | \href{https://github.com/xanf-code}{github.com/xanf-code}}
+
+\vspace{-10pt}
+
+% education section
+\section*{Education}
+\textbf{Northeastern University, Boston} -- MS in Computer Software Engineering | GPA: 3.7/4.0 
+\hfill Expected Aug 2026 \\
+\vspace{3px}
+\textbf{Courses:} Data Structures \&\ Algorithms, Cloud Computing, Software Engineering, Advanced Web Architecture \\
+\vspace{3px}
+\textbf{Certifications:} AWS Solutions Architect - Professional, AWS Certified Developer - Associate
+\vspace{-6.5pt}
+
+% experience section
+\section*{Experience}
+
+\textbf{Full Stack Engineer,} {Dassault Systemes} -- Boston, MA \hfill June 2025 -- Jan 2026 \\
+\vspace{-9pt}
+\begin{itemize}
+    \item Architected an end-to-end \uline{\href{https://www.3ds.com/newsroom/press-releases/dassault-systemes-unveils-new-way-working-industry-ai-powered-virtual-companions}{virtual companion}} for stakeholder recommendation and assignment across 8 million users using a supervisor–agent architecture and semantic search system built with Python and FastAPI
+    \item Accelerated UI responsiveness by 25\% for a virtual companion by architecting event-driven state management using React, Redux, WebSockets, and GraphQL, boosting user engagement for 3,000+ clients
+    \item Reduced SQL response latency from 800ms to 200ms by implementing Redis caching and Hibernate ORM optimization for Java REST APIs, ensuring system scalability for 8 million indexed users
+    \item Maintained 97\% test coverage across microservices by collaborating with cross-functional teams to integrate quality assurance practices via JUnit, Jasmine/Karma, SonarQube, and Jenkins CI/CD
+\end{itemize}
+
+\textbf{Full Stack Engineer,} {London Stock Exchange Group} -- Bangalore, India \hfill July 2022 -- Aug 2024 \\
+\vspace{-9pt}
+\begin{itemize}
+    \item Architected an end-to-end anti-corruption and fraud detection platform processing 1.4 billion daily records by leveraging High Availability microservices using Java, Spring Boot and Distributed Systems on AWS
+    \item Delivered end-to-end monitoring system for 500+ analysts by designing high-frequency Kafka–Elasticsearch pipelines and a bespoke React, Tailwind UI and TanStack reducing report generation time by 75\%
+    % Boosted data retrieval 90% for 500+ analysts by architecting low-latency Kafka-Elasticsearch pipelines and automating containerized deployments via Docker, Kubernetes, and Terraform (IaC)
+    \item Ensured 100\% uptime for a platform processing 1.4 billion daily records by architecting PostgreSQL data layers and AWS WAF IP rules on REST API Gateway, securing data for 400K+ active users
+    \item Resolved critical production issue through Root Cause Analysis and Node.js and React monitoring dashboard, reducing resolution time by 50\% while streamlining cross-team knowledge sharing via technical runbooks
+\end{itemize}
+
+\vspace{-18.5pt}
+
+% projects section
+\section*{Projects}
+\textbf{GoonedIn} \hfill \href{https://goonedin.vercel.app/}{goonedin.com} \\
+\vspace{-9pt}
+\begin{itemize}
+  \item Resolved the issue of fragmented job searching by developing an automated aggregation engine using FastAPI and Playwright to pull listings from multiple sources and apply AI-driven match scoring with DeepSeek
+  \item Optimized system efficiency and reduced API overhead by implementing a global PostgreSQL caching strategy and a sequential queuing system for structured job analysis
+  \item Architected a real-time dashboard to provide instantaneous job updates for users by implementing a WebSocket communication layer with Next.js and Zustand for responsive state management
+\end{itemize}
+
+\textbf{Personal Finance Intelligence Platform} \hfill \href{https://spend-analyzer-coral.vercel.app/login/demo}{spendanalyzer.ai} \\
+\vspace{-9pt}
+\begin{itemize}
+  \item Resolved the difficulty of interpreting fragmented financial data by developing an automated extraction engine with Java Spring Boot and OpenAI to transform unstructured bank PDFs into structured spending analytics
+  \item Ensured reliable processing for high-volume document uploads by implementing an asynchronous architecture using RabbitMQ message queues and Spring Boot to handle OCR and AI-driven data normalization tasks
+  \item Enabled wealth and risk insights for users through a responsive full-stack dashboard via React, and PostgreSQL
+\end{itemize}
+
+% alternate formatting for projects section
+% \section*{Projects}
+% \begin{itemize}
+%   \item \textbf{QuantSoftware Toolkit:} Open source Python library for data analysis and machine learning for finance
+%   \item \textbf{GitHub Visualization:} Data visualization of Git Log data using D3 to analyze project trends over time
+%   \item \textbf{Recommendation System:} Music and movie recommender systems using collaborative filtering on public datasets
+%   \item \textbf{Mac Setup:} Book that gives step by step instructions on setting up developer environment on Mac OS
+% \end{itemize}
+
+\vspace{-18.5pt}
+
+% skills section
+\section*{Skills}
+\textbf{Languages:} Java, Python, TypeScript, SQL \\
+\textbf{Frontend:} React, Next.js, Angular, WebSockets, GraphQL \\
+\textbf{Backend:} Spring Boot, Node.js, Microservices, Event-Driven Systems \\
+\textbf{Infrastructure \&\ Data:} AWS, Docker, Kubernetes, Terraform, PostgreSQL, Redis, Kafka, MongoDB
+\end{document}

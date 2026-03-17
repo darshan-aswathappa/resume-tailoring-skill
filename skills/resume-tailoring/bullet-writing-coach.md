@@ -161,6 +161,7 @@ REASONING: "{one sentence: what changed and why}"
 - **Strong**: Passes all constraints, has 2-of-3, starts with strong verb, reads clean
 - **Needs Work**: Minor issues (weak verb, missing one element, slightly long)
 - **Rewrite**: Banned verb, reads as job duty, no measurable element, fundamentally vague
+- **Flagged (recruiter)**: Bullet surfaced by Phase 6 recruiter feedback — treat as Rewrite if CRITICAL severity, Needs Work if IMPORTANT severity. These take priority over coach-assigned verdicts from the same iteration.
 
 ## Writing Process
 
@@ -217,7 +218,7 @@ When a user indicates work is under NDA, classified, or otherwise restricted:
 The bullet writing coach operates within a review loop alongside the recruiter persona.
 
 ### Iteration 1 (Initial Polish)
-- Review ALL bullets produced by Phase 3 (Resume Assembly)
+- Review ALL bullets produced by Phase 3 (Assembly Phase)
 - Apply full constraint set: XYZ check, verb check, 2-of-3 rule, length limit
 - Produce polished bullet set and pass to recruiter for feedback
 
@@ -240,3 +241,13 @@ VERIFICATION: Does revised bullet satisfy original constraints AND new feedback?
 - Typically converges in 2-3 iterations
 - If a bullet is flagged 3 times, surface it to the user for manual input
 - The coach does not enter an infinite polish loop; after iteration 3, present the best version with a note on unresolved feedback
+
+### LaTeX Mode Behavior
+
+When `source_format == "latex"`, bullet iteration produces LaTeX patch output rather than markdown rewrites:
+
+- Each iteration produces a new partial LaTeX patch covering only the bullets that changed in that iteration
+- The patch header notes: "Iteration {N} — replaces iteration {N-1} patch for the following sections: {list}"
+- Bullets not touched in the current iteration are omitted from the new patch
+- The 150-character plain-text cap applies to the unescaped bullet text (not counting LaTeX commands like `\&`, `\%`)
+- See SKILL.md "LaTeX mode iteration behavior" for full patch output rules

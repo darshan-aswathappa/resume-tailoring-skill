@@ -341,6 +341,12 @@ Feedback items route to the phase best equipped to address them.
 - Poor XYZ format (accomplished X by doing Y, resulting in Z)
 - Bullet too long or too short for scanning
 
+**CONTENT GAP (max iterations reached) -> Phase 2.5 (Supplemental Discovery):**
+- All 3 iterations exhausted and score has not reached 85
+- Remaining issues suggest missing experience, not presentation problems
+- Bullets from 2+ categories flagged for the same underlying gap
+- Note: Phase 2.5 supplemental discovery is an escape route only — it does not re-run the full discovery session. It targets only the specific gaps that remain unresolved.
+
 ### Classification Algorithm
 
 ```python
@@ -365,7 +371,7 @@ def classify_feedback(feedback_items):
 
 ```
 FEEDBACK ROUTING:
-Target: Phase {2|3|3.5} ({Template|Assembly|Bullet Polish})
+Target: Phase {2|3|3.5} ({Template|Assembly Phase|Bullet Polish})
 
 ITEMS TO ADDRESS:
 1. [CRITICAL] {issue} → {fix}
@@ -378,11 +384,13 @@ ITEMS CARRIED FORWARD (address if time permits):
 Proceeding to Phase {N} with {count} feedback items.
 ```
 
+> **Multi-job mode note:** In multi-job batch processing, Phase 3.5 (Bullet Polish) is referred to as Phase 3C.5, and Phase 3 (Assembly Phase) is referred to as Phase 3C. The routing logic and feedback structure are identical; only the phase labels differ.
+
 ## Iteration Management
 
 ### Iteration Limits
 
-- Maximum 3 iterations (1 initial + 2 revisions); terminate early if 3 consecutive iterations gain < 2 points
+- Maximum 3 iterations (1 initial + 2 revisions); terminate early after 2 consecutive iterations with < 2 point gain
 - Each iteration must show score improvement or the loop terminates early
 - Track full iteration history for transparency
 
@@ -422,7 +430,7 @@ Proceeding to Phase {N} with {count} feedback items.
 ### Max Iterations Reached Template
 
 ```
-"Score improvement stalled (3 consecutive iterations with < 2 point gain, or score plateau reached).
+"Score improvement stalled (2 consecutive iterations with < 2 point gain, or score plateau reached).
 
 SCORE PROGRESSION:
   Attempt 1: {score} ({decision})
@@ -567,8 +575,10 @@ OPTIONS:
 2. APPLY ALL MINOR FIXES - Address all {N} items for cumulative
    improvement. Expected gain: +{estimate} points.
 
-RECOMMENDATION: Option 1 unless you have time for polish. The
-difference between 82 and 85 rarely changes recruiter behavior."
+RECOMMENDATION: Option 1 unless you have time for polish. At
+scores in the 82-84 range, the marginal difference from minor polish
+rarely changes recruiter behavior — but do not use this reasoning to
+accept scores below 80."
 ```
 
 ## Multi-Job Integration
@@ -589,7 +599,7 @@ Batch: 3 jobs
 In EXPRESS mode, the evaluation loop runs without user intervention:
 - Phase -1 rubric generated automatically (no checkpoint)
 - Phase 6 evaluates, routes feedback, re-runs target phase
-- Loop continues until PASS or score plateau (3 consecutive attempts with < 2 point gain)
+- Loop continues until PASS or score plateau (2 consecutive attempts with < 2 point gain)
 - User sees only the final result with iteration history
 
 ### Interactive Mode

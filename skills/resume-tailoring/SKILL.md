@@ -64,6 +64,7 @@ Use this skill when:
 
 **Workflow:**
 
+0. [Auto-detect] Multi-job detection — if multiple JDs detected, offer multi-job mode (see Multi-Job Detection section); single job proceeds directly to Phase -1
 1. [Phase -1] Recruiter intake - build evaluation rubric from JD (sealed)
 2. [Phase 0] Build library from existing resumes (supports `.md` and `.tex`)
 3. [Phase 1] Research company/role
@@ -312,9 +313,7 @@ WHAT EARNS AN INTERVIEW:
 - {trigger_1}
 - {trigger_2}
 
-Does this match your understanding? Any insider knowledge to add?"
-
-Wait for user confirmation before proceeding.
+This rubric is now SEALED. Proceed to resume building? (Y/N)"
 ```
 
 **Output:** Sealed evaluation rubric (consumed only by Phase 6)
@@ -873,7 +872,8 @@ Let me know for each experience."
    - Adjacent (20%): Related tools, methods, problem space
    - Impact (10%): Achievement type alignment
 
-   Overall = (Direct × 0.4) + (Transfer × 0.3) + (Adjacent × 0.2) + (Impact × 0.1)
+   Overall = (Direct × 0.4) + (Transferable × 0.3) + (Adjacent × 0.2) + (Impact × 0.1)
+   // Source of truth: matching-strategies.md — do not edit formula here without updating there
 
 3. **Rank candidates by score**
    - Sort high to low
@@ -932,7 +932,7 @@ Let me know for each experience."
 
 **3.2 Content Reframing:**
 
-When good match (>60%) but terminology misaligned:
+When good match (≥60%) but terminology misaligned:
 
 **Apply strategies from matching-strategies.md:**
 
@@ -1277,14 +1277,14 @@ END OF CHANGES
 - If the source used `\begin{enumerate}` for a role, use `\begin{enumerate}` and `\end{enumerate}` in the patch for that role (not `\begin{itemize}`); all other formatting rules (indent, no period, XYZ format) apply identically
 - Emit exactly the number of polished bullets selected and approved in Phase 3/3.5 for that role or project. Do not pad to match the original count and do not truncate. If fewer bullets are produced than the original role had, add a LaTeX comment on the line before `\begin{itemize}`: `% Source had {N} bullets; {M} selected after optimization`
 - **HARD CONSTRAINT — Project bullets: Exactly 2 per project.** Even if the source had 3+ bullets, the patch MUST contain exactly 2 `\item` lines per project. No exceptions.
-- **HARD CONSTRAINT — Bullet length: Max 2 printed lines per bullet (~150 chars plain text).** If any bullet exceeds this, trim it before emitting. Every word must earn its place.
+- **HARD CONSTRAINT — Bullet length: Max 2 printed lines per bullet (~120 chars ideal, 150 chars absolute cap).** If any bullet exceeds 150 characters of plain text, trim it before emitting. If trimming would sacrifice a quantified metric, split into two focused single-metric bullets (each ≤150 chars). Every word must earn its place.
 
 **Edge case handling in LaTeX patch mode:**
 
 - **Nested itemize:** If the source has nested `\begin{itemize}` blocks inside a role, only replace the outermost block. Note explicitly: "The source for {Role} contains nested lists. Only the outer \begin{itemize} is replaced. Review inner bullets manually."
 - **\item with optional label `\item[label]`:** Preserve the label syntax on any unchanged items; use plain `\item` for all new bullets
 - **Inline formatting in bullets:** When rewriting bullets, preserve inline commands the user already uses (e.g., `\href{url}{text}`, `\textbf{}`, `\textit{}`). Only add `\href` links that were in the original bullet; do not introduce new URLs
-- **Long bullets:** If a polished bullet exceeds approximately 150 characters of plain text, add a `% long bullet` comment on the same line as a visual warning, e.g., `  \item {long bullet text} % long bullet`
+- **Long bullets:** If a polished bullet exceeds approximately 120 characters of plain text, add a `% long bullet` comment as a visual warning, e.g., `  \item {long bullet text} % long bullet`; if it exceeds 150 characters, trim or split before emitting (see HARD CONSTRAINT above)
 - **Multiple `.tex` files in library:** If the library was built from more than one `.tex` file, produce a separate patch block for each file, labeled with the filename at the top of its section
 
 **Additional edge cases specific to LaTeX mode:**
@@ -1449,11 +1449,11 @@ Professional appearance for direct submission
 
 ## Gaps Addressed
 
-### Before Experience Discovery:
+### Before Gap Resolution:
 
 {Gap analysis showing initial state}
 
-### After Experience Discovery:
+### After Gap Resolution:
 
 {Gap analysis showing final state}
 
@@ -1788,7 +1788,7 @@ Proceed to library update."
 **If REJECT:**
 
 ```
-"RECRUITER EVALUATION: REJECT (Iteration {N}/{max})
+"RECRUITER EVALUATION: REJECT (Iteration {N}/3)
 
 Scan Score: {score}/100
 Detail Score: {score}/100
@@ -1860,7 +1860,7 @@ def determine_restart_phase(feedback_items):
 
 **Iteration Rules:**
 
-- Maximum 3 iterations (1 initial + 2 revisions); terminate early if 3 consecutive iterations gain < 2 points
+- Maximum 3 iterations (1 initial + 2 revisions); terminate early after 2 consecutive iterations with < 2 point gain
 - Each iteration re-runs ONLY from the routed phase forward
 - Phases 0, 1, 2.5 NEVER re-run (library, research, discovery are stable)
 - Phase 2 re-runs ONLY on structural feedback (rare)

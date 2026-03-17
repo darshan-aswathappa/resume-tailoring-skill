@@ -13,11 +13,21 @@ Tracks the state of multi-job resume tailoring sessions, supporting pause/resume
   "created": "ISO 8601 timestamp",
   "current_phase": "intake|gap_analysis|discovery|per_job_processing|finalization",
   "processing_mode": "interactive|express",
+  "mode": "yolo|truth",
+  "rubrics": {
+    "{job_id}": {
+      "sealed": true,
+      "knockout_count": "number",
+      "trigger_count": "number"
+    }
+  },
   "jobs": [JobState],
   "discoveries": [DiscoveredExperience],
   "aggregate_gaps": AggregateGaps
 }
 ```
+
+> **Canonical source:** All inline JSON fragments in multi-job-workflow.md are illustrative subsets of this schema. When fields diverge, this file is authoritative.
 
 ### JobState
 

@@ -29,9 +29,14 @@ Current best match: {X}% confidence ('{best_match_text}')
 ```
 
 **Leverage Classification:**
-- HIGH-LEVERAGE: Appears in 3+ jobs — prioritize in discovery
-- MEDIUM-LEVERAGE: Appears in 2 jobs — address if time permits
-- LOW-LEVERAGE: Appears in 1 job — address last or skip if time-constrained
+- HIGH-LEVERAGE: Appears in 3+ jobs — prioritize in discovery; always run branching interview
+- MEDIUM-LEVERAGE: Appears in 2 jobs — address if time permits; run branching interview unless session is running long
+- LOW-LEVERAGE: Appears in 1 job — address last; skip if any of the following apply:
+  - Discovery session has already exceeded estimated time budget
+  - The gap has a current match confidence ≥50% (close enough to reframe)
+  - The single job it appears in is low priority (user-assigned)
+  - User explicitly opts to skip low-leverage gaps at session start
+  When skipping: note the gap in the job's coverage report for manual follow-up
 
 > This terminology is used consistently across branching-questions.md and multi-job-workflow.md gap analysis output.
 

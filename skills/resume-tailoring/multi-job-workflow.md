@@ -159,6 +159,8 @@ resumes/batches/batch-{YYYY-MM-DD}-{slug}/
 
 Initialize _batch_state.json:
 
+> **Schema reference:** See `docs/schemas/batch-state-schema.md` for the canonical full schema definition.
+
 ```json
 {
   "batch_id": "batch-2025-11-04-job-search",
@@ -340,7 +342,9 @@ Generate `_aggregate_gaps.md`:
 For 3 similar jobs, this replaces 3 × 15 min = 45 min of sequential discovery.
 ```
 
-**1.5 Update Batch State:**
+**1.5 Write Updated Batch State Snapshot:**
+
+Write a complete new `_batch_state.json` replacing the previous file (do not edit in-place):
 
 ```json
 {
@@ -567,7 +571,9 @@ For each approved experience:
    - used_in_jobs
    - confidence_improvement
 
-**2.8 Update Batch State:**
+**2.8 Write Updated Batch State Snapshot:**
+
+Write a complete new `_batch_state.json` replacing the previous file (do not edit in-place):
 
 ```json
 {
@@ -933,6 +939,35 @@ To resume later, say 'resume batch {batch_id}' or 'continue my batch'."
 ```
 
 Save batch state with current progress.
+
+### Edge Case: All Jobs Fail Recruiter Evaluation
+
+```
+SCENARIO: All jobs in the batch failed recruiter evaluation after 3 iterations.
+
+HANDLING:
+"All {N} resumes in this batch did not reach the 85 pass threshold after
+3 evaluation iterations.
+
+BATCH SCORES:
+- Job 1 ({Company}): {best_score}/100 (best iteration)
+- Job 2 ({Company}): {best_score}/100 (best iteration)
+...
+
+COMMON FAILURE PATTERNS:
+{List any repeated issues across jobs}
+
+OPTIONS:
+1. ACCEPT BEST VERSIONS — Use each job's highest-scoring iteration. Resumes
+   are competitive even below automated threshold.
+2. SUPPLEMENTAL DISCOVERY — Return to Phase 2 to address common gaps.
+   Common failures across multiple jobs suggest a shared content gap,
+   not a presentation issue.
+3. MANUAL REVIEW — Review all resumes together and provide specific direction.
+
+RECOMMENDATION: If 2+ jobs share the same failure reason, run supplemental
+discovery for those shared gaps before resubmitting all affected resumes."
+```
 
 ## Phase 4: Batch Finalization
 

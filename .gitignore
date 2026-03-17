@@ -18,3 +18,5 @@ test-outputs/
 
 # Git worktrees
 .worktrees/
+.gitnexus
+.claude

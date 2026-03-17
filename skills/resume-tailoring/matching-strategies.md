@@ -69,9 +69,22 @@ Overall = (Direct × 0.4) + (Transferable × 0.3) + (Adjacent × 0.2) + (Impact 
 - 60-74%: ADJACENT — Acceptable with reframing
 - <60%: GAP — Flag as unaddressed requirement
 
+## Success Profile → Scoring Input Mapping
+
+The Success Profile produced by research-prompts.md feeds the four scoring dimensions as follows:
+
+| Success Profile Field | Scoring Dimension | How to Use |
+|---|---|---|
+| Core Requirements (Must-Have) | Direct Match (40%) | Required keywords, domain, technology — high-weight direct match inputs |
+| Valued Capabilities (Nice-to-Have) | Transferable Skills (30%) | Same capability in different context — use for transferable scoring |
+| Narrative Themes | Impact Alignment (10%) | What achievement types the role values — use to score impact alignment |
+| Cultural Fit Signals | Impact Alignment (10%) | Collaboration, scale, innovation signals — incorporate into impact scoring |
+| Terminology Map | All dimensions (reframing) | Use standard→preferred term mappings when reframing bullets |
+| Risk Factors | Gap Handling | Flag risks before matching; address via reframing or cover letter guidance |
+
 ## Content Reframing Strategies
 
-**When to reframe:** Good match (>60%) but language doesn't align with target terminology
+**When to reframe:** Good match (≥60%) but language doesn't align with target terminology
 
 **Strategy 1: Keyword Alignment**
 ```
@@ -151,13 +164,16 @@ RECOMMENDATIONS:
 User decides how to proceed.
 ```
 
-**Option 3: Discover New Experience**
+**Option 3: Route to Gap Resolution (truth mode only)**
 ```
-If Experience Discovery not yet run:
+This option applies only in `truth` mode. In `yolo` mode, skip to Option 2 (Flag as Gap) or
+fabricate per Phase 2.5 rules — do not prompt the user for discovery during content matching.
 
-"This gap might be addressable through experience discovery.
-Would you like to do a quick branching interview about {gap_area}?"
+If Phase 2.5 Gap Resolution has not yet run for this gap:
+  Route back to Phase 2.5 for targeted supplemental discovery:
+  "This gap might be addressable through supplemental discovery.
+  Returning to Phase 2.5 to explore {gap_area} — no user prompt needed."
 
-If already run:
-Accept gap, move forward.
+If Phase 2.5 has already run and this gap remains:
+  Accept gap, move forward.
 ```

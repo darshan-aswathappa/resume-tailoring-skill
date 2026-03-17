@@ -51,6 +51,13 @@ Search results:
 3. Fallback: "site:linkedin.com {job_title} {similar_company}"
 ```
 
+> `{similar_company}` = a company of comparable tier, size, and domain. Selection guide:
+> - FAANG/large tech targeting: use peer companies (Google → Meta, Amazon, Microsoft, Apple)
+> - Enterprise software: use direct competitors or same-tier vendors (Salesforce → ServiceNow, Workday)
+> - Series B-C startup: use same-stage companies in the same sector or geography
+> - Industry vertical (fintech, healthcare, etc.): use leading companies in that vertical
+> Avoid using much smaller or much larger companies — benchmark profiles should reflect similar role scope.
+
 **Analysis prompt:**
 ```
 Analyze these LinkedIn profiles for people in similar roles:

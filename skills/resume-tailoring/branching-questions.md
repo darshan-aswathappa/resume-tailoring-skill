@@ -194,29 +194,29 @@ BRANCH C - If "NOTHING NEW":
 ## Example Complete Flow
 
 ```
-SKILL: "I see the job requires CI/CD experience. Have you worked with CI/CD pipelines?"
+COACH: "I see the job requires CI/CD experience. Have you worked with CI/CD pipelines?"
 
 USER: "Yes, I set up GitHub Actions for my side project."
 
-SKILL: "Tell me more about that - what does the pipeline do?" [BRANCH: Depth]
+COACH: "Tell me more about that - what does the pipeline do?" [BRANCH: Depth]
 
 USER: "It runs tests and deploys to cloud when I push code."
 
-SKILL: "What testing framework do you use?" [BRANCH: Technical details]
+COACH: "What testing framework do you use?" [BRANCH: Technical details]
 
 USER: "pytest for my Python code."
 
-SKILL: "Excellent. What's deployed - is this a production app?" [BRANCH: Impact/scale]
+COACH: "Excellent. What's deployed - is this a production app?" [BRANCH: Impact/scale]
 
 USER: "Yeah, it's a tool used by 3 nonprofits right now."
 
-SKILL: "That's substantial! Have you dealt with any flaky tests or reliability issues?"
-      [BRANCH: Real-world challenges]
+COACH: "That's substantial! Have you dealt with any flaky tests or reliability issues?"
+       [BRANCH: Real-world challenges]
 
 USER: "Actually yes, I had to add retries for some API-dependent tests."
 
-SKILL: "Perfect - that shows practical troubleshooting. Any metrics on build time
-      or deployment frequency?" [BRANCH: Quantify]
+COACH: "Perfect - that shows practical troubleshooting. Any metrics on build time
+       or deployment frequency?" [BRANCH: Quantify]
 
 USER: "Deploys take about 3 minutes, and I deploy several times a week."
 

@@ -19,7 +19,7 @@ Generates high-quality, tailored resumes optimized for specific job descriptions
 
 **Keyword Matching Target: 75-85% JD coverage.** Do NOT aim for 90%+ — a near-perfect match looks fabricated and triggers recruiter suspicion. The ratio should be approximately **70% hard skills / technical requirements and 30% soft skills / leadership qualities**. A 100% keyword match is a red flag, not a goal. Leave natural gaps that a real candidate would have.
 
-**Mission:** A person's ability to get a job should be based on their experiences and capabilities, not on their resume writing skills.
+**Mission:** A person's ability to get a job should be based on their experiences and capabilities, not on their resume writing skills. *(In `yolo` mode: where unavoidable gaps remain after exploring all documented experience, contextually grounded fabrication bridges the gap between experience and opportunity — the goal is still to represent the whole person, not to manufacture a fictional one.)*
 
 ## When to Use
 
@@ -47,7 +47,7 @@ Use this skill when:
 | Argument | Required | Values | Description |
 |----------|----------|--------|-------------|
 | `mode` | Yes | `yolo` or `truth` | `yolo`: fabrication permitted for gap-filling (75-85% coverage target). `truth`: interview-based discovery only, no fabrication — work with what we have. |
-| `resume_path` | Yes | File path | Path to the source resume in LaTeX (.tex) format |
+| `resume_path` | Yes | File path | Path to source resume (.tex or .md) — format auto-detected in Phase 0 |
 | `job_description` | Yes | Text or URL | The target job description (paste full text or provide URL) |
 
 **Example:**
@@ -59,7 +59,7 @@ Use this skill when:
 **Required from user (via positional arguments):**
 
 1. Mode: `yolo` (fabrication) or `truth` (interview-only, no fabrication)
-2. Resume path: Path to LaTeX (.tex) source resume
+2. Resume path: Path to resume file (.tex or .md) — format auto-detected in Phase 0
 3. Job description: Full text or URL
 
 **Workflow:**

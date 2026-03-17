@@ -1146,7 +1146,7 @@ LIBRARY UPDATED:
 
 These experiences are now available for future applications.
 
-Good luck with your applications! 🚀"
+Good luck with your applications!"
 ```
 
 **4.4 Handle Review Option 2 (REVIEW INDIVIDUALLY):**

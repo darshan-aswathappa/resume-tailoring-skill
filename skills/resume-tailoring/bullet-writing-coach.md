@@ -60,6 +60,8 @@ amplified, conceptualized, crafted, elevated, employed, engaged, engineered, enh
 
 These verbs sound impressive but communicate nothing specific. "Spearheaded a migration" tells you less than "migrated." "Engineered a solution" tells you less than "built a caching layer." Replace each with the literal action: what did your hands (or keyboard) actually do?
 
+*(Engineering roles: prefer 'built', 'architected', 'designed', or 'developed' over 'engineered' — 'built a distributed caching layer' is more specific and concrete than 'engineered a solution'. The word 'engineered' is on this list precisely because it obscures the actual action.)*
+
 ## The 2-of-3 Rule
 
 Every bullet must demonstrate at least 2 of:
@@ -241,6 +243,31 @@ VERIFICATION: Does revised bullet satisfy original constraints AND new feedback?
 - Typically converges in 2-3 iterations
 - If a bullet is flagged 3 times, surface it to the user for manual input
 - The coach does not enter an infinite polish loop; after iteration 3, present the best version with a note on unresolved feedback
+
+### Selective Rollback
+
+After a bulk polish pass (Iteration 1), individual bullets can be reverted to their pre-polish state if the rewrite made them worse.
+
+**How to request rollback:**
+```
+"Revert bullet {N} of {Role/Project} to the pre-polish version"
+"Undo the change to bullet 2 of my Google PM role"
+```
+
+**Rollback rules:**
+- The iteration log for each pass retains the previous version of every bullet touched
+- Only bullets that were changed in the current iteration can be rolled back (unchanged bullets have no prior version in this session)
+- After rollback, the reverted bullet is excluded from subsequent re-polish passes (treated as Strong / user-approved)
+- Rollback is per-bullet, not per-role — rolling back one bullet in a role does not affect others
+- In LaTeX mode, a rollback generates a corrected patch entry replacing the reverted line
+
+**Rollback output format:**
+```
+ROLLBACK: {Role} Bullet {N}
+  Reverted: "{polished version}" → "{original version}"
+  Reason: User requested revert
+  Status: Locked — excluded from further polish iterations
+```
 
 ### LaTeX Mode Behavior
 

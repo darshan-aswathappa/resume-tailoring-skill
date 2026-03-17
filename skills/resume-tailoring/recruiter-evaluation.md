@@ -396,6 +396,8 @@ Proceeding to Phase {N} with {count} feedback items.
 
 ### Iteration History Structure
 
+**Example A — Successful (PASS via specialist override):**
+
 ```json
 {
   "iterations": [
@@ -419,13 +421,57 @@ Proceeding to Phase {N} with {count} feedback items.
       "attempt": 3,
       "scores": { "scan": 78, "detail": 74, "overall": 76.4 },
       "decision": "PASS",
-      "reason": null,
+      "reason": "specialist_override",
       "feedback_count": null,
       "routed_to": null
     }
   ]
 }
 ```
+
+**Example B — Plateau termination (2 consecutive < 2 point gain → early exit):**
+
+```json
+{
+  "iterations": [
+    {
+      "attempt": 1,
+      "scores": { "scan": 76, "detail": 72, "overall": 74.4 },
+      "decision": "REJECT",
+      "reason": "insufficient_evidence",
+      "score_gain": null,
+      "consecutive_flat": 0,
+      "feedback_count": { "critical": 1, "important": 2, "minor": 1 },
+      "routed_to": "Phase 3.5"
+    },
+    {
+      "attempt": 2,
+      "scores": { "scan": 77, "detail": 73, "overall": 75.2 },
+      "decision": "REJECT",
+      "reason": "insufficient_evidence",
+      "score_gain": 0.8,
+      "consecutive_flat": 1,
+      "feedback_count": { "critical": 0, "important": 2, "minor": 2 },
+      "routed_to": "Phase 3.5"
+    },
+    {
+      "attempt": 3,
+      "scores": { "scan": 77, "detail": 74, "overall": 75.8 },
+      "decision": "REJECT",
+      "reason": "insufficient_evidence",
+      "score_gain": 0.6,
+      "consecutive_flat": 2,
+      "termination_reason": "plateau_2_consecutive_flat",
+      "feedback_count": { "critical": 0, "important": 1, "minor": 3 },
+      "routed_to": null
+    }
+  ],
+  "best_version": "attempt_3",
+  "best_score": 75.8
+}
+```
+
+> Plateau termination fires after attempt 3 completes — the 2-consecutive check runs after each iteration. The user is presented with the Max Iterations Reached template using `best_version` as the recommended output.
 
 ### Max Iterations Reached Template
 

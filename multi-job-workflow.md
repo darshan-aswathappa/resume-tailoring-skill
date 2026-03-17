@@ -4,7 +4,7 @@
 
 Handles 3-5 similar jobs efficiently by consolidating experience discovery while maintaining per-job research depth.
 
-**Architecture:** Shared Discovery + Per-Job Tailoring
+**Architecture:** Shared Discovery + Per-Job Tailoring + Recruiter Quality Gate
 
 **Target Use Case:**
 - Small batches (3-5 jobs)
@@ -537,6 +537,18 @@ Ready to proceed with per-job processing? (Y/N)"
 
 **Key Insight:** Once discovery is complete, each job can be processed independently using enriched library.
 
+**Per-Job Processing Pipeline:**
+```
+For each job:
+  Phase 3A: Research (company + role)
+  Phase 3B: Template (structure + titles)
+  Phase 3C: Content Matching (scoring + selection)
+  Phase 3C.5: Bullet Polish (XYZ format + verb quality)  <- NEW
+  Phase 3D: Generation (MD + DOCX + Report)
+  Phase 3E: Recruiter Evaluation (optional quality gate)  <- NEW
+    └─ If REJECT: feedback loop (max 3 iterations)
+```
+
 **Processing Modes:**
 
 Before starting, ask user:
@@ -682,6 +694,40 @@ Approve? (Y/N/adjust)"
 - Save to file
 - Proceed automatically
 
+**3.45 Phase 3C.5: Bullet Polish (Per-Job)**
+
+**Same process as single-job workflow (SKILL.md Phase 3.5):**
+
+```
+├─ Apply XYZ format rules to all selected bullets
+├─ Enforce verb quality (banned/avoided verb replacement)
+├─ Verify 2-of-3 rule (technical depth, challenge, measurable impact)
+├─ Role-type adaptation per job's JD classification
+└─ Checkpoint (if INTERACTIVE): Show polish summary
+```
+
+See `bullet-writing-coach.md` for full specification.
+
+**INTERACTIVE Mode:**
+```
+"Bullets polished for {Company} - {Role}:
+
+- Strong (no changes): {N} bullets
+- Improved: {N} bullets
+- Rewritten: {N} bullets
+
+Notable changes:
+- '{original}' -> '{polished}' [Reason: {why}]
+
+Approve? (Y/N/adjust)"
+```
+
+**EXPRESS Mode:**
+- Apply bullet coach rules automatically
+- Use best judgment for rewrites
+- Save polish log to file
+- Proceed automatically
+
 **3.5 Phase 3D: Generation (Per-Job)**
 
 **Same process as single-job workflow (SKILL.md Phase 4):**
@@ -700,6 +746,73 @@ Output files:
 
 All saved to: `job-{N}-{company-slug}/`
 
+**3.55 Phase 3E: Recruiter Evaluation (Per-Job, Optional)**
+
+**Same process as single-job workflow (SKILL.md Phase 6):**
+
+```
+├─ Knockout check against job-specific rubric
+├─ 6-second scan evaluation (60% weight)
+├─ 14-second detail evaluation (40% weight)
+├─ PASS (>= 70 overall) or REJECT with feedback
+└─ If REJECT: feedback loop within this job (max 3 iterations)
+```
+
+See `recruiter-evaluation.md` for full specification.
+
+**Per-Job Rubric:** Each job has its own evaluation rubric generated from its JD. The rubric is created during Phase -1 / Phase 0 intake -- rubric generation runs as part of initial JD collection, before per-job processing begins. In multi-job mode, all rubrics are generated during batch initialization (Phase 0) and sealed for use in Phase 3E evaluation.
+
+**INTERACTIVE Mode:**
+```
+"Recruiter evaluation for {Company} - {Role}:
+
+Score: {overall}/100 (Scan: {scan}/100, Detail: {detail}/100)
+Decision: {PASS/REJECT}
+
+{If PASS:}
+  Strengths: {list}
+  Ready to proceed to next job.
+
+{If REJECT:}
+  Issues found: {N}
+  - {issue 1}: {fix suggestion}
+  - {issue 2}: {fix suggestion}
+
+  Iteration {N}/3. Auto-improving and re-evaluating...
+  (Or: Skip recruiter loop for this job? Y/N)"
+```
+
+**EXPRESS Mode:**
+- Run recruiter evaluation automatically
+- If REJECT: auto-apply feedback and re-evaluate (max 3 iterations)
+- Log all iterations and scores
+- Proceed to next job regardless of final result
+
+**Feedback Loop within Per-Job Processing:**
+```
+If REJECT and iteration < 3:
+  Route feedback:
+    STRUCTURAL → Re-run Phase 3B (Template)
+    CONTENT SELECTION → Re-run Phase 3C (Content Matching)
+    BULLET QUALITY → Re-run Phase 3C.5 (Bullet Polish)
+  Then re-run Phase 3D (Generation) → Phase 3E (Evaluation)
+
+If REJECT and iteration == 3:
+  Accept best version, note remaining concerns
+  Continue to next job
+```
+
+**Skip Option:** User can skip recruiter evaluation for any or all jobs:
+```
+"Would you like recruiter evaluation for your batch?
+
+1. ALL JOBS - Evaluate every resume (recommended)
+2. HIGH PRIORITY ONLY - Evaluate only high-priority jobs
+3. SKIP - No recruiter evaluation (faster)
+
+Your choice? (1/2/3)"
+```
+
 **3.6 Progress Tracking:**
 
 After each job completes:
@@ -710,6 +823,8 @@ After each job completes:
 QUALITY METRICS:
 - JD Coverage: {%}%
 - Direct Matches: {%}%
+- Recruiter Score: {score}/100 ({PASS/REJECT/SKIPPED})
+- Iterations: {N}
 - Files: ✓ MD ✓ DOCX ✓ Report
 
 Jobs remaining: {total - N}

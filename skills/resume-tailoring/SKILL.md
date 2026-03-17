@@ -1,6 +1,6 @@
 ---
 name: resume-tailoring
-description: Use when creating tailored resumes for job applications - researches company/role, creates optimized templates, conducts branching experience discovery to surface undocumented skills, and generates professional multi-format resumes from user's resume library while maintaining factual integrity
+description: Use when creating tailored resumes for job applications - researches company/role, creates optimized templates, conducts branching experience discovery to surface undocumented skills, generates professional multi-format resumes from user's resume library while maintaining factual integrity, and validates output through simulated recruiter evaluation with iterative feedback loop
 ---
 
 # Resume Tailoring Skill
@@ -33,13 +33,17 @@ Use this skill when:
 2. Resume library location (defaults to `resumes/` in current directory)
 
 **Workflow:**
-1. Build library from existing resumes
-2. Research company/role
-3. Create template (with user checkpoint)
-4. Optional: Branching experience discovery
-5. Match content with confidence scoring
-6. Generate MD + DOCX + PDF + Report
-7. User review → Optional library update
+1. Recruiter intake - build evaluation rubric from JD (sealed)
+2. Build library from existing resumes
+3. Research company/role
+4. Create template (with user checkpoint)
+5. Optional: Branching experience discovery
+6. Match content with confidence scoring
+7. Polish bullets using XYZ format (bullet-writing coach)
+8. Generate MD + DOCX + Report (+ optional PDF)
+9. Recruiter evaluation (6-second scan + 14-second detail review)
+10. If rejected: iterate with feedback (max 3 loops)
+11. User review and optional library update
 
 ## Implementation
 
@@ -47,6 +51,8 @@ See supporting files:
 - `research-prompts.md` - Structured prompts for company/role research
 - `matching-strategies.md` - Content matching algorithms and scoring
 - `branching-questions.md` - Experience discovery conversation patterns
+- `bullet-writing-coach.md` - XYZ format rules, verb enforcement, role-type adaptation
+- `recruiter-evaluation.md` - Recruiter rubric generation, scoring, feedback loop routing
 
 ## Workflow Details
 
@@ -94,7 +100,7 @@ Use multi-job mode? (Y/N)"
 **If user confirms N or single job detected:**
 - Use existing single-job workflow (Phase 0 onwards)
 
-**Backward Compatibility:** Single-job workflow completely unchanged.
+**Enhanced Single-Job Workflow:** The single-job workflow now includes recruiter evaluation (Phase -1, Phase 6) and bullet polish (Phase 3.5) with an iterative feedback loop. All original phases (0-5) remain unchanged in behavior.
 
 **Multi-Job Workflow:**
 
@@ -104,6 +110,12 @@ When multi-job mode is activated, see `multi-job-workflow.md` for complete workf
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
+│ PHASE -1: Recruiter Intake (per-job rubrics)                │
+│ - Build evaluation rubric from each JD (sealed)             │
+│ - Define knockout criteria, scan priorities, triggers       │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
 │ PHASE 0: Intake & Batch Initialization                      │
 │ - Collect 3-5 job descriptions                              │
 │ - Initialize batch structure                                │
@@ -111,15 +123,15 @@ When multi-job mode is activated, see `multi-job-workflow.md` for complete workf
 └─────────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
-│ PHASE 1: Aggregate Gap Analysis                            │
+│ PHASE 1: Aggregate Gap Analysis                             │
 │ - Extract requirements from all JDs                         │
 │ - Cross-reference against library                           │
 │ - Build unified gap map (deduplicate)                       │
-│ - Prioritize: Critical → Important → Job-specific          │
+│ - Prioritize: Critical → Important → Job-specific           │
 └─────────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
-│ PHASE 2: Shared Experience Discovery                       │
+│ PHASE 2: Shared Experience Discovery                        │
 │ - Single branching interview covering ALL gaps              │
 │ - Multi-job context for each question                       │
 │ - Tag experiences with job relevance                        │
@@ -127,18 +139,20 @@ When multi-job mode is activated, see `multi-job-workflow.md` for complete workf
 └─────────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
-│ PHASE 3: Per-Job Processing (Sequential)                   │
+│ PHASE 3: Per-Job Processing (Sequential)                    │
 │ For each job:                                               │
 │   ├─ Research (company + role benchmarking)                 │
 │   ├─ Template generation                                    │
-│   ├─ Content matching (uses enriched library)              │
-│   └─ Generation (MD + DOCX + Report)                        │
+│   ├─ Content matching (uses enriched library)               │
+│   ├─ Bullet polish (XYZ format, verb quality)          NEW  │
+│   ├─ Generation (MD + DOCX + Report)                        │
+│   └─ Recruiter evaluation (feedback loop, max 3)       NEW  │
 │ Interactive or Express mode                                 │
 └─────────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
-│ PHASE 4: Batch Finalization                                │
-│ - Generate batch summary                                    │
+│ PHASE 4: Batch Finalization                                 │
+│ - Generate batch summary (includes recruiter scores)        │
 │ - User reviews all resumes together                         │
 │ - Approve/revise individual or batch                        │
 │ - Update library with approved resumes                      │
@@ -152,6 +166,80 @@ When multi-job mode is activated, see `multi-job-workflow.md` for complete workf
 **Quality:** Same depth as single-job workflow (research, matching, generation)
 
 **See `multi-job-workflow.md` for complete implementation details.**
+
+### Phase -1: Recruiter Intake
+
+**Goal:** Build an independent evaluation rubric BEFORE any resume work begins
+
+**Why this phase exists:** If the same process both builds and evaluates the resume, you get confirmation bias. By establishing the recruiter's criteria upfront and independently, the evaluation in Phase 6 has teeth.
+
+**Inputs:**
+- Job description (text or URL from user)
+
+**Process:**
+
+**-1.1 Activate Recruiter Persona:**
+```
+Persona: "You are a senior recruiter at {Company} who has been briefed
+on this role. You have 15 open reqs and limited time. You need to
+quickly identify candidates worth forwarding to the hiring manager."
+```
+
+**-1.2 Build Evaluation Rubric (see recruiter-evaluation.md):**
+
+1. **Knockout criteria** - instant disqualifiers:
+   - Missing required credentials
+   - Wrong seniority level
+   - No relevant domain experience
+   - Resume formatting red flags
+
+2. **6-second scan priorities** (what recruiter eyes hit first):
+   - Title/company signal (25%)
+   - Summary keyword alignment (25%)
+   - Visible quantified achievements (20%)
+   - Experience recency (15%)
+   - Visual clarity (15%)
+
+3. **Forward triggers** (what earns an interview):
+   - Specific achievements matching role
+   - Evidence of scope and scale
+   - Domain depth indicators
+
+4. **Differentiators** (good vs great):
+   - Narrative coherence
+   - Unique angles
+   - Growth trajectory
+
+**-1.3 Seal the Rubric:**
+
+CRITICAL: The rubric is NOT shared with Phases 0-4. It is stored separately and accessed ONLY by Phase 6. The resume-building phases operate without knowledge of the specific evaluation criteria. On iteration 2+, only the FEEDBACK (what is wrong) flows back, not the rubric itself.
+
+**Checkpoint:**
+```
+"Before we build your resume, I've analyzed the JD from a recruiter's
+perspective.
+
+KNOCKOUT CRITERIA (instant discard):
+- {criterion 1}
+- {criterion 2}
+
+WHAT I SCAN FIRST (6-second test):
+1. {scan_priority_1} (25%)
+2. {scan_priority_2} (25%)
+3. {scan_priority_3} (20%)
+4. {scan_priority_4} (15%)
+5. {scan_priority_5} (15%)
+
+WHAT EARNS AN INTERVIEW:
+- {trigger_1}
+- {trigger_2}
+
+Does this match your understanding? Any insider knowledge to add?"
+
+Wait for user confirmation before proceeding.
+```
+
+**Output:** Sealed evaluation rubric (consumed only by Phase 6)
 
 ### Phase 0: Library Initialization
 
@@ -674,12 +762,106 @@ Wait for user approval before generation.
 
 **Output:** Complete bullet-by-bullet mapping with confidence scores and reframings
 
+### Phase 3.5: Bullet Polish
+
+**Goal:** Apply XYZ format rules and quality standards to every selected bullet before generation
+
+**Why this phase exists:** Phase 3 selects WHICH content to use. Phase 3.5 ensures HOW it is written meets professional standards. These are separate concerns.
+
+**Inputs:**
+- Approved content mapping (from Phase 3)
+- Success profile (from Phase 1)
+- Role type classification (engineering / PM / analyst / design)
+- Recruiter feedback (ONLY on iteration 2+, from Phase 6)
+
+**Process (see bullet-writing-coach.md for full specification):**
+
+**3.5.1 Role Type Classification:**
+- Engineering: emphasize systems, architecture, technical decisions
+- PM/Leadership: emphasize business outcomes, team scale, strategy
+- Analyst: emphasize data volume, insight-to-action, decision impact
+- Design: emphasize user research, conversion metrics, design system scale
+
+**3.5.2 Bullet-by-Bullet Review:**
+
+For each bullet in the approved content mapping:
+
+1. **XYZ Format Check:**
+   - Has strong past-tense action verb? (not banned/avoided)
+   - Contains Z component (method/technology/approach)?
+   - Contains X component (result/deliverable)?
+   - Contains Y component (metric/quantified impact)?
+   - Single sentence, max 2 printed lines?
+   - No pronouns, no periods, no sub-bullets?
+
+2. **Verb Check:**
+   - BANNED verbs (immediate rewrite): aided, assisted, coded, collaborated, communicated, executed, helped, participated, programmed, ran, used, utilized, worked on (see bullet-writing-coach.md for full list)
+   - AVOIDED verbs (flag for replacement): spearheaded, orchestrated, revolutionized, enhanced
+   - PREFERRED verbs by role type (see bullet-writing-coach.md)
+
+3. **2-of-3 Rule:**
+   Each bullet must demonstrate at least 2 of:
+   - Technical depth (specific technologies, methods, architectures)
+   - Challenge overcome (scale, complexity, constraint, ambiguity)
+   - Measurable impact (numbers, percentages, dollar amounts, time savings)
+
+4. **Verdict Assignment:**
+   - STRONG: Passes all checks, no changes needed
+   - NEEDS_WORK: Passes most checks, minor adjustments
+   - REWRITE: Fails XYZ format, uses banned verbs, or fails 2-of-3 rule
+
+**3.5.3 Rewrite Process (for NEEDS_WORK and REWRITE bullets):**
+
+1. Extract goals from original bullet
+2. Identify available metrics from library metadata or discovery
+3. Draft 2-3 XYZ-formatted alternatives
+4. Rank by specificity, impact clarity, and role-type fit
+5. Select best, trim to max 2 printed lines
+6. Verify truthfulness against source material
+
+**Truthfulness constraint:** Rewriting preserves factual accuracy. Metrics come from source resumes or discovery. Technologies must be ones the user actually used. Never fabricate.
+
+**3.5.4 Iteration 2+ Behavior (after recruiter rejection):**
+
+When recruiter feedback targets bullet quality:
+- ONLY re-polish bullets identified in feedback
+- Apply specific feedback as constraints (e.g., "add metrics to bullet 3")
+- Do NOT change bullets that were not flagged
+- Re-run writing process with feedback as additional input
+- Log all changes for transparency
+
+**Checkpoint (iteration 1 only):**
+```
+"I've polished {N} bullets for quality and impact:
+
+REVIEW SUMMARY:
+- Strong (no changes): {N} bullets
+- Improved: {N} bullets
+- Rewritten: {N} bullets
+
+NOTABLE CHANGES:
+- {Bullet X}: '{original}' -> '{polished}' [Reason: {why}]
+- {Bullet Y}: '{original}' -> '{polished}' [Reason: {why}]
+
+All changes preserve factual accuracy.
+
+Review changes? Or proceed to generation?
+(Y to proceed / R to review all changes / adjust specific bullets)"
+
+Wait for user approval before proceeding.
+
+On iteration 2+: No user checkpoint. Changes auto-apply from recruiter
+feedback and proceed directly to Phase 4.
+```
+
+**Output:** Polished content mapping with all bullets meeting XYZ format standards
+
 ### Phase 4: Generation Phase
 
 **Goal:** Create professional multi-format outputs
 
 **Inputs:**
-- Approved content mapping (from Phase 3)
+- Polished content mapping (from Phase 3.5)
 - User's formatting preferences (from library analysis)
 - Target role information (from Phase 1)
 
@@ -994,6 +1176,201 @@ Not added to library - you can manually move later if desired."
 
 **Output:** Updated library database + metadata preservation (if Option 1)
 
+### Phase 6: Recruiter Evaluation
+
+**Goal:** Simulate a real recruiter's first-pass review of the generated resume
+
+**Why this phase exists:** The resume-building process (Phases 0-4) optimizes for JD coverage and content quality. But real recruiter screening is a different test: does the resume survive a 6-20 second scan? This phase provides that external perspective.
+
+**Inputs:**
+- Generated resume (markdown, from Phase 4)
+- Sealed evaluation rubric (from Phase -1)
+- Iteration count (1-based)
+
+**Process (see recruiter-evaluation.md for full specification):**
+
+**6.1 Knockout Check (simulated 2-second glance):**
+```
+For each knockout criterion in rubric:
+  Check resume against criterion
+  If ANY knockout found: REJECT immediately
+  Feedback: "Knockout: {criterion}. Resume would be discarded
+  before any detailed review."
+```
+
+**6.2 Six-Second Scan (60% of overall score):**
+```
+Read ONLY what a recruiter sees in 6 seconds:
+- Name and contact line
+- Professional summary (first 2-3 sentences)
+- Most recent job title + company
+- Skills section headers
+
+Score each scan priority item (0-100), apply weights:
+  scan_score = sum(item_score * item_weight for each scan_priority)
+
+If scan_score < 60: REJECT (reason: weak first impression)
+  Detailed scan never happens.
+```
+
+**6.3 Fourteen-Second Detail (40% of overall score):**
+```
+Only runs if scan_score >= 60
+
+Read:
+- All bullet points for top 2 roles
+- Education section
+- Overall structure and narrative flow
+
+Evaluate:
+- Forward trigger match (40%): How many triggers satisfied?
+- Narrative coherence (25%): Does career story make sense?
+- Achievement depth (20%): Are bullets specific with metrics?
+- Differentiation (15%): What makes candidate stand out?
+
+detail_score = weighted sum of above evaluations
+```
+
+**6.4 Decision:**
+```
+overall_score = (scan_score * 0.6) + (detail_score * 0.4)
+
+PASS if: overall_score >= 70 AND scan_score >= 60 AND no knockouts
+REJECT otherwise
+```
+
+**If PASS:**
+```
+"RECRUITER EVALUATION: PASS (Iteration {N})
+
+Scan Score: {score}/100
+Detail Score: {score}/100
+Overall: {score}/100
+
+WHAT WORKED:
+- {strength_1}
+- {strength_2}
+
+DIFFERENTIATOR NOTES:
+- {what stood out}
+
+VERDICT: This resume would be forwarded to the hiring manager.
+
+Proceed to library update."
+
+→ Continue to Phase 5
+```
+
+**If REJECT:**
+```
+"RECRUITER EVALUATION: REJECT (Iteration {N}/{max})
+
+Scan Score: {score}/100
+Detail Score: {score}/100
+Overall: {score}/100
+
+REJECTION REASON: {primary_reason}
+
+SPECIFIC FEEDBACK:
+1. {Issue}: {What's wrong} → {What would fix it}
+   Severity: CRITICAL | IMPORTANT | MINOR
+   Affects: {target_phase} / {target_section}
+
+2. {Issue}: ...
+
+IMPROVEMENT PRIORITY (address in order):
+1. {Highest impact change}
+2. {Second highest}
+3. {Third highest}
+
+Feeding back into resume workflow..."
+
+→ Route to feedback loop
+```
+
+### Feedback Loop
+
+**Goal:** Route recruiter feedback to the appropriate phase for targeted revision
+
+**Routing Logic:**
+
+Feedback is classified and routed based on issue type:
+
+```
+STRUCTURAL issues → Phase 2 (Template)
+  Examples: wrong section order, role consolidation incorrect,
+  bullet allocation needs change
+  Frequency: ~10% of rejections
+
+CONTENT SELECTION issues → Phase 3 (Assembly)
+  Examples: wrong experience highlighted, better match available,
+  irrelevant bullets included
+  Frequency: ~30% of rejections
+
+BULLET QUALITY issues → Phase 3.5 (Bullet Polish)
+  Examples: weak verbs, missing metrics, vague impact, poor XYZ format
+  Frequency: ~60% of rejections (most common)
+```
+
+**Classification algorithm:**
+```python
+def determine_restart_phase(feedback_items):
+    has_critical_structural = any(
+        item.target_phase == "template" and item.severity == "CRITICAL"
+        for item in feedback_items
+    )
+    content_count = sum(1 for item in feedback_items
+                        if item.target_phase == "assembly")
+    bullet_count = sum(1 for item in feedback_items
+                       if item.target_phase == "bullet_polish")
+
+    if has_critical_structural:
+        return "Phase 2"    # Template revision
+    elif content_count > bullet_count:
+        return "Phase 3"    # Content re-selection
+    else:
+        return "Phase 3.5"  # Bullet rewrite (default)
+```
+
+**Iteration Rules:**
+- Maximum 3 iterations (1 initial + 2 revisions)
+- Each iteration re-runs ONLY from the routed phase forward
+- Phases 0, 1, 2.5 NEVER re-run (library, research, discovery are stable)
+- Phase 2 re-runs ONLY on structural feedback (rare)
+- Each iteration should be progressively lighter (fewer bullets to fix)
+- Recruiter feedback carries forward as additional input to the routed phase
+
+**After Max Iterations (iteration 3 still REJECT):**
+```
+"RECRUITER EVALUATION: REJECT (Iteration 3/3 - FINAL)
+
+After 3 iterations, the resume has not passed recruiter evaluation.
+
+SCORE PROGRESSION:
+- Iteration 1: {score}/100
+- Iteration 2: {score}/100
+- Iteration 3: {score}/100
+
+REMAINING ISSUES:
+- {issue_1}: This may be a fundamental content gap
+- {issue_2}: ...
+
+RECOMMENDATIONS:
+1. ACCEPT CURRENT VERSION - Best achievable with current experience
+   (Score: {score}/100)
+2. EXPERIENCE DISCOVERY - The gaps may require discovering new
+   experiences, not re-arranging existing ones
+3. MANUAL REVIEW - Review yourself and provide specific direction
+
+The root cause is likely a content gap, not a presentation issue.
+
+Which option?"
+
+→ If option 1: Continue to Phase 5
+→ If option 2: Return to Phase 2.5 (Experience Discovery)
+→ If option 3: Collect user feedback, apply changes, re-evaluate
+```
+
 ## Error Handling & Edge Cases
 
 **Edge Case 1: Insufficient Resume Library**
@@ -1121,17 +1498,63 @@ Your preference?"
 [User decides priority]
 ```
 
+**Edge Case 7: Recruiter Feedback Contradicts User Preferences**
+```
+SCENARIO: Recruiter says "remove education section" but user insisted on keeping it
+
+HANDLING:
+"The recruiter evaluation suggests changes that conflict with your
+earlier preferences:
+
+CONFLICT:
+- Recruiter says: {suggestion}
+- You previously chose: {preference}
+
+OPTIONS:
+1. KEEP YOUR PREFERENCE - Override recruiter feedback
+2. ACCEPT RECRUITER SUGGESTION - Optimize for recruiter pass
+3. COMPROMISE - {suggested middle ground}
+
+Your choice?"
+
+[User decides; their preference takes priority]
+```
+
+**Edge Case 8: Score Improves But Doesn't Cross Threshold**
+```
+SCENARIO: Score goes from 52 to 65 across iterations but never hits 70
+
+HANDLING:
+"Your resume has improved significantly across iterations:
+- Iteration 1: 52/100
+- Iteration 2: 61/100
+- Iteration 3: 65/100
+
+While it hasn't reached the 70/100 pass threshold, the improvement
+shows the right direction. The remaining 5-point gap likely requires
+new content, not better presentation.
+
+RECOMMENDATION: Accept current version (65/100) and address remaining
+gaps through experience discovery or cover letter.
+
+Accept? (Y/N)"
+```
+
 **Error Recovery:**
 - All checkpoints allow going back to previous phase
 - User can request adjustments at any checkpoint
 - Generation failures (DOCX/PDF) fall back to markdown-only
 - Progress saved between phases (can resume if interrupted)
+- Recruiter evaluation failures fall back to user review (skip Phase 6)
+- Bullet polish preserves original if rewrite degrades truthfulness
 
 **Graceful Degradation:**
 - Research limited → Fall back to JD-only analysis
 - Library small → Work with available + emphasize discovery
 - Matches weak → Transparent gap identification
 - Generation fails → Provide markdown + error details
+- Recruiter loop stalls → Accept best version after max iterations
+- Bullet polish conflicts → User preference overrides coach rules
 
 ## Usage Examples
 
@@ -1141,13 +1564,16 @@ USER: "I want to apply for Principal PM role in 1ES team at Microsoft.
       Here's the JD: {paste}"
 
 SKILL:
-1. Library Build: Finds 29 resumes
-2. Research: Microsoft 1ES team, internal culture, role benchmarking
-3. Template: Features PM2 Azure Eng Systems role (most relevant)
-4. Discovery: Surfaces VS Code extension, Bhavana AI side project
-5. Assembly: 92% JD coverage, 75% direct matches
-6. Generate: MD + DOCX + Report
-7. User approves → Library updated with new resume + 6 discovered experiences
+1. Recruiter Intake: Builds sealed evaluation rubric for 1ES PM role
+2. Library Build: Finds 29 resumes
+3. Research: Microsoft 1ES team, internal culture, role benchmarking
+4. Template: Features PM2 Azure Eng Systems role (most relevant)
+5. Discovery: Surfaces VS Code extension, Bhavana AI side project
+6. Assembly: 92% JD coverage, 75% direct matches
+7. Bullet Polish: 2 bullets improved (verb upgrades, added metrics)
+8. Generate: MD + DOCX + Report
+9. Recruiter Evaluation: PASS on first attempt (Score: 82/100)
+10. User approves → Library updated with new resume + 6 discovered experiences
 
 RESULT: Highly competitive application leveraging internal experience
 ```
@@ -1157,14 +1583,18 @@ RESULT: Highly competitive application leveraging internal experience
 USER: "I'm a TPM trying to transition to ecology PM role. JD: {paste}"
 
 SKILL:
-1. Library Build: Finds existing TPM resumes
-2. Research: Ecology sector, sustainability focus, cross-domain transfers
-3. Template: Reframes "Technical Program Manager" → "Program Manager,
+1. Recruiter Intake: Builds rubric focused on domain expertise + systems thinking
+2. Library Build: Finds existing TPM resumes
+3. Research: Ecology sector, sustainability focus, cross-domain transfers
+4. Template: Reframes "Technical Program Manager" → "Program Manager,
              Environmental Systems" emphasizing systems thinking
-4. Discovery: Surfaces volunteer conservation work, graduate research in
+5. Discovery: Surfaces volunteer conservation work, graduate research in
              environmental modeling
-5. Assembly: 65% JD coverage - flags gaps in domain-specific knowledge
-6. Generate: Resume + gap analysis with cover letter recommendations
+6. Assembly: 65% JD coverage - flags gaps in domain-specific knowledge
+7. Bullet Polish: 5 bullets rewritten (domain terminology alignment)
+8. Generate: Resume + gap analysis with cover letter recommendations
+9. Recruiter Evaluation: REJECT (Score: 58/100) → feedback: weak domain signal
+   Iteration 2: Bullet polish strengthens ecology keywords → PASS (Score: 71/100)
 
 RESULT: Bridges technical skills with environmental domain
 ```
@@ -1174,13 +1604,16 @@ RESULT: Bridges technical skills with environmental domain
 USER: "I have a 2-year gap while starting a company. JD: {paste}"
 
 SKILL:
-1. Library Build: Finds pre-gap resumes
-2. Research: Standard analysis
-3. Template: Includes startup as legitimate role
-4. Discovery: Surfaces skills developed during startup (fundraising,
+1. Recruiter Intake: Builds rubric; notes career gap as potential knockout
+2. Library Build: Finds pre-gap resumes
+3. Research: Standard analysis
+4. Template: Includes startup as legitimate role
+5. Discovery: Surfaces skills developed during startup (fundraising,
              product development, team building)
-5. Assembly: Frames gap as entrepreneurial experience
-6. Generate: Resume presenting gap as valuable experience
+6. Assembly: Frames gap as entrepreneurial experience
+7. Bullet Polish: 3 startup bullets enhanced with metrics and XYZ format
+8. Generate: Resume presenting gap as valuable experience
+9. Recruiter Evaluation: PASS (Score: 73/100) - startup framing cleared knockout
 
 RESULT: Gap becomes strength showing initiative and diverse skills
 ```
@@ -1204,10 +1637,10 @@ SKILL:
    - Cross-functional team leadership examples
    - Recent hackathon project
    - Open source contributions
-6. Per-Job Processing (×3):
-   - Job 1 (Microsoft): 85% coverage, emphasizes Azure/1ES alignment
-   - Job 2 (Google): 88% coverage, emphasizes technical depth
-   - Job 3 (AWS): 78% coverage, addresses AWS gap in cover letter recs
+6. Per-Job Processing (×3, each with bullet polish + recruiter evaluation):
+   - Job 1 (Microsoft): 85% coverage, recruiter score 79/100 (PASS)
+   - Job 2 (Google): 88% coverage, recruiter score 82/100 (PASS)
+   - Job 3 (AWS): 78% coverage, recruiter score 65/100 → iteration 2: 72/100 (PASS)
 7. Batch Finalization: All 3 resumes reviewed, approved, added to library
 
 RESULT: 3 high-quality resumes in 40 minutes vs 45 minutes sequential
@@ -1234,11 +1667,37 @@ SKILL:
    - Surfaces payment processing side project
    - React work from bootcamp
    - Large-scale system design course
-5. Per-Job Processing (×2): Jobs 4, 5 processed independently
+5. Per-Job Processing (×2): Jobs 4, 5 processed with bullet polish + recruiter eval
+   - Job 4 (Stripe): recruiter score 76/100 (PASS)
+   - Job 5 (Meta): recruiter score 68/100 → iteration 2: 74/100 (PASS)
 6. Updated Batch Summary: Now 5 jobs total, 8 experiences discovered
 
 RESULT: 2 additional resumes in 20 minutes (vs 30 min if starting from scratch)
         Time saved by not re-asking 8 previous gaps: ~20 minutes
+```
+
+**Example 6: Recruiter Feedback Loop in Action**
+```
+USER: "I want to apply for Senior TPM at Google. JD: {paste}"
+
+SKILL:
+1. Recruiter Intake: Builds evaluation rubric
+   - Knockouts: No distributed systems, < 5 years PM experience
+   - Scan priorities: TPM title, cloud keywords, metrics visible
+2. Library Build + Research + Template + Discovery + Assembly
+3. Bullet Polish: 4 bullets rewritten (banned verbs, missing metrics)
+4. Generation: MD + DOCX + Report
+5. Recruiter Evaluation (Iteration 1): REJECT (Score: 58/100)
+   - Scan: 62/100 (keywords buried in wrong section)
+   - Detail: 52/100 (weak achievement depth)
+   - Feedback: Move cloud keywords to summary, add metrics to top bullets
+6. Bullet Polish (Iteration 2): 3 bullets improved per feedback
+7. Recruiter Evaluation (Iteration 2): PASS (Score: 74/100)
+   - Scan: 78/100 (keywords now prominent)
+   - Detail: 68/100 (metrics now visible)
+
+RESULT: Resume passed recruiter screen on second iteration.
+        First draft would have been screened out.
 ```
 
 ## Testing Guidelines
@@ -1308,6 +1767,33 @@ PASS CRITERIA:
 - All formats readable
 - Formatting professional
 - Content identical across formats
+```
+
+**Test 7: Recruiter Feedback Loop**
+```
+- Generate resume with deliberately weak bullets
+- Verify recruiter rejects with actionable feedback
+- Verify feedback routes to correct phase
+- Verify iteration improves score
+- Verify max iterations reached gracefully
+PASS CRITERIA:
+- Feedback is specific and actionable
+- Score improves across iterations
+- Loop terminates at max 3 iterations
+- Final output is best version across all iterations
+```
+
+**Test 8: Bullet Polish Quality**
+```
+- Provide bullets with banned verbs and missing metrics
+- Verify bullet coach rewrites correctly
+- Check XYZ format compliance
+- Verify truthfulness preserved
+PASS CRITERIA:
+- All banned verbs replaced
+- 2-of-3 rule enforced
+- Metrics preserved from source material
+- No fabricated content
 ```
 
 **Regression Testing:**
